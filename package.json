@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "start": "node app",
+    "dev": "nodemon app"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -25,6 +25,8 @@
   "devDependencies": {
     "eslint": "^8.39.0",
     "nodemon": "^2.0.22",
-    "prettier": "^2.8.8"
+    "prettier": "^2.8.8",
+    "stylelint": "^15.6.1",
+    "stylelint-config-standard": "^33.0.0"
   }
 }
