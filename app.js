@@ -1,20 +1,45 @@
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
+const express = require("express");
+const app = express();
+const path = require("path");
+const { logger } = require("./middleware/logger");
+const errorHandler = require("./middleware/errorHandler");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
+const PORT = process.env.PORT || 5000;
 
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+// Custom logger middleware
+app.use(logger);
 
-var app = express();
+// 3rd party middleware to allow the app to receive requests from other origins (Cross-origin resource sharing) -> Make our server available to the public to access
+app.use(cors(corsOptions));
 
-app.use(logger("dev"));
+// Built-in middleware to allow the app to receive and parse json data
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// 3rd party middleware to parse the cookies that the server receives
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
+// Set up path for static files
+// Don't need to use '/' when using path.join
+app.use("/", express.static(path.join(__dirname, "public")));
 
-module.exports = app;
+// Routes
+app.use("/", require("./routes/index"));
+
+// Handle 404 Not Found error
+app.all("*", (req, res) => {
+  res.status(404);
+  if (req.accepts("html")) {
+    res.sendFile(path.join(__dirname, "views", "404.html"));
+  } else if (req.accepts("json")) {
+    res.json({ message: "404 Not Found" });
+  } else {
+    res.type("txt").send("404 Not Found");
+  }
+});
+
+// Custom middleware to handle errors
+app.use(errorHandler);
+
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
