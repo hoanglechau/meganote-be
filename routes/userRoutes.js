@@ -6,7 +6,6 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/userController");
-const { StatusCodes } = require("http-status-codes");
 
 // Routing with controller methods for different HTTP methods coming into the users route
 router
