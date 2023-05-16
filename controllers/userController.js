@@ -64,12 +64,94 @@ const createUser = asyncHandler(async (req, res) => {
 // @desc Update a user
 // @route POST /users
 // @access Private
-const updateUser = asyncHandler(async (req, res) => {});
+const updateUser = asyncHandler(async (req, res) => {
+  const { id, username, roles, active, password } = req.body;
+
+  // Check for required data
+  if (
+    !id ||
+    !username ||
+    !Array.isArray(roles) ||
+    !roles.length ||
+    typeof active !== "boolean"
+  ) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Missing required data!" });
+  }
+
+  const user = await User.findById(id).exec();
+
+  // Check if user exists
+  if (!user) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "User not found!" });
+  }
+
+  // Check if the entered new username is already taken by another user
+  const duplicateUser = await User.findOne({ username }).lean().exec();
+  if (duplicateUser && duplicateUser?._id.toString() !== id) {
+    return res
+      .status(StatusCodes.CONFLICT)
+      .json({ message: "This username already exists!" });
+  }
+
+  // Update the user with the new data
+  // Can only do this if these properties exist in the Mongoose User model
+  user.username = username;
+  user.roles = roles;
+  user.active = active;
+
+  if (password) {
+    // Hash the new password with 10 salt rounds
+    user.password = await bcrypt.hash(password, 10);
+  }
+
+  // Save the updated user in the database
+  const updatedUser = await user.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: `${updatedUser.username} updated successfully!` });
+});
 
 // @desc Delete a user
 // @route DELETE /users
 // @access Private
-const deleteUser = asyncHandler(async (req, res) => {});
+const deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.body;
+
+  // Check for required data
+  if (!id) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Missing required data!" });
+  }
+
+  // Check if the user has assigned notes
+  const notes = await Note.findOne({ user: id }).lean().exec();
+  if (notes?.length) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Cannot delete users with assigned notes" });
+  }
+
+  // Check if the user exists
+  const user = await User.findById(id).exec();
+  if (!user) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "User not found!" });
+  }
+
+  // "deletedUser" will hold the deleted user's information
+  const deletedUser = await user.deleteOne();
+
+  res.status(StatusCodes.OK).json({
+    message: `User ${deletedUser.username} with ID ${deletedUser._id} deleted successfully!`,
+  });
+});
 
 module.exports = {
   getAllUsers,
