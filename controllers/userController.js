@@ -11,7 +11,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
   // Not showing the password field
   // Enabling the lean option tells Mongoose to skip instantiating a full Mongoose document and just return a plain old JS object (POJOs)
   const users = await User.find().select("-password").lean();
-  if (!users) {
+  if (!users?.length) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No users found!" });
@@ -113,7 +113,9 @@ const updateUser = asyncHandler(async (req, res) => {
 
   res
     .status(StatusCodes.OK)
-    .json({ message: `${updatedUser.username} updated successfully!` });
+    .json({
+      message: `Username ${updatedUser.username} updated successfully!`,
+    });
 });
 
 // @desc Delete a user
@@ -149,7 +151,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   const deletedUser = await user.deleteOne();
 
   res.status(StatusCodes.OK).json({
-    message: `User ${deletedUser.username} with ID ${deletedUser._id} deleted successfully!`,
+    message: `Username ${deletedUser.username} with ID ${deletedUser._id} deleted successfully!`,
   });
 });
 
