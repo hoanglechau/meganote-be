@@ -11,7 +11,7 @@ const getAllNotes = async (req, res) => {
 
   // If no notes exists in the database
   if (!notes?.length) {
-    return res.status(400).json({ message: "No notes found" });
+    return res.status(400).json({ message: "No notes found!" });
   }
 
   // Add username to each note before sending the response
