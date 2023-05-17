@@ -1,4 +1,5 @@
 require("dotenv").config(); // Prefer to put at the start
+require("express-async-errors");
 const express = require("express");
 const app = express();
 const path = require("path");
@@ -32,7 +33,9 @@ app.use("/", express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/", require("./routes/index"));
+app.use("/auth", require("./routes/authRoutes"));
 app.use("/users", require("./routes/userRoutes"));
+app.use("/notes", require("./routes/noteRoutes"));
 
 // Handle 404 Not Found error
 app.all("*", (req, res) => {
