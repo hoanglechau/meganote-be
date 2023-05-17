@@ -46,7 +46,10 @@ const createUser = asyncHandler(async (req, res) => {
   // Hash the password, put it through 10 salt rounds to ensure that the password is safe. Even when looking at it in the database, we wouldn't know what the password is
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const userObject = { username, password: hashedPassword, roles };
+  const userObject =
+    !Array.isArray(roles) || !roles.length
+      ? { username, password: hashedPassword }
+      : { username, password: hashedPassword, roles };
 
   // Create and store the new user in the database
   const user = await User.create(userObject);
@@ -77,7 +80,7 @@ const updateUser = asyncHandler(async (req, res) => {
   ) {
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Missing required data!" });
+      .json({ message: "Missing required data! Only password is optional!" });
   }
 
   const user = await User.findById(id).exec();
@@ -90,8 +93,11 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 
   // Check if the entered new username is already taken by another user
-  const duplicateUser = await User.findOne({ username }).lean().exec();
-  if (duplicateUser && duplicateUser?._id.toString() !== id) {
+  const existingUser = await User.findOne({ username })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
+  if (existingUser && existingUser?._id.toString() !== id) {
     return res
       .status(StatusCodes.CONFLICT)
       .json({ message: "This username already exists!" });
@@ -111,11 +117,9 @@ const updateUser = asyncHandler(async (req, res) => {
   // Save the updated user in the database
   const updatedUser = await user.save();
 
-  res
-    .status(StatusCodes.OK)
-    .json({
-      message: `Username ${updatedUser.username} updated successfully!`,
-    });
+  res.status(StatusCodes.OK).json({
+    message: `Username ${updatedUser.username} updated successfully!`,
+  });
 });
 
 // @desc Delete a user
