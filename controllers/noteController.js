@@ -38,13 +38,14 @@ const createNote = async (req, res) => {
       .json({ message: "Missing required data" });
   }
 
-  // Check for duplicate note title
-  const duplicateNote = await Note.findOne({ title })
+  // Check if the note title has already been used
+  // Collation is used to make the search case insensitive (Check for both uppercase and lowercase letters)
+  const existingNote = await Note.findOne({ title })
     .collation({ locale: "en", strength: 2 })
     .lean()
     .exec();
 
-  if (duplicateNote) {
+  if (existingNote) {
     return res
       .status(StatusCodes.CONFLICT)
       .json({ message: "This note title has already been used!" });
@@ -86,14 +87,14 @@ const updateNote = async (req, res) => {
       .json({ message: "Note not found!" });
   }
 
-  // Check for duplicate note title
-  const duplicateNote = await Note.findOne({ title })
+  // Check if the note title has already been used
+  const existingNote = await Note.findOne({ title })
     .collation({ locale: "en", strength: 2 })
     .lean()
     .exec();
 
   // Allow renaming of the original note
-  if (duplicateNote && duplicateNote?._id.toString() !== id) {
+  if (existingNote && existingNote?._id.toString() !== id) {
     return res
       .status(StatusCodes.CONFLICT)
       .json({ message: "This note title has already been used!" });
