@@ -12,6 +12,8 @@ const errorHandler = (err, req, res, next) => {
 
   res.status(status);
 
+  // The 'isError' flag is used to determine whether the error message should be displayed to the user. This is included so that RTK Query can find it on the frontend. This is for handling errors in the apiSlice on the frontend code
+  // This is for unexpected errors (no clear error status)
   res.json({ message: err.message, isError: true });
 };
 
