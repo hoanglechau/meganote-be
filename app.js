@@ -1,4 +1,5 @@
 require("dotenv").config(); // Prefer to put at the start
+// Handle uncaught exceptions. Must be at the top of the file. This package automatically applies itself everywhere in our app to handle async errors
 require("express-async-errors");
 const express = require("express");
 const app = express();
