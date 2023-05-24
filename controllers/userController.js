@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const Note = require("../models/Note");
+// Since we're using asyncHandler, we don't need to use try-catch blocks anymore. asyncHandler will catch any errors and pass them to the next middleware. We can then use our custom error handler to handle the errors
+// However, since we're also using 'express-async-errors', actually 'express-async-handler' is not necessary anymore. I'm just trying it out in this controller. The other controllerls don't use this package
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const { StatusCodes } = require("http-status-codes");
@@ -27,7 +29,8 @@ const createUser = asyncHandler(async (req, res) => {
   const { username, password, roles } = req.body;
 
   // Check for required data
-  if (!username || !password || !Array.isArray(roles) || !roles.length) {
+  // 'Roles' is not required since it already has a default as 'Employee'
+  if (!username || !password) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Missing required data!" });
@@ -35,7 +38,11 @@ const createUser = asyncHandler(async (req, res) => {
 
   // Check if the username already exists
   // Use exec() to get a fully-fledged promise
-  const existingUser = await User.findOne({ username }).lean().exec();
+  // Use collation to make the search case-insensitive -> Check for both lowercase and uppercase characters ('Hoang' and 'hoang' are considered duplicate users)
+  const existingUser = await User.findOne({ username })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
   if (existingUser) {
     return res
@@ -46,6 +53,7 @@ const createUser = asyncHandler(async (req, res) => {
   // Hash the password, put it through 10 salt rounds to ensure that the password is safe. Even when looking at it in the database, we wouldn't know what the password is
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // If roles is not an array or is an empty array, don't include it in the user object
   const userObject =
     !Array.isArray(roles) || !roles.length
       ? { username, password: hashedPassword }
@@ -93,10 +101,13 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 
   // Check if the entered new username is already taken by another user
+  // Use exec() to get a fully-fledged promise
+  // Use collation to make the search case-insensitive -> Check for both lowercase and uppercase characters ('Hoang' and 'hoang' are considered duplicate users)
   const existingUser = await User.findOne({ username })
     .collation({ locale: "en", strength: 2 })
     .lean()
     .exec();
+
   if (existingUser && existingUser?._id.toString() !== id) {
     return res
       .status(StatusCodes.CONFLICT)
