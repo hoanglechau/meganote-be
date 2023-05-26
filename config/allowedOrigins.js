@@ -1,7 +1,4 @@
-// To be changed later when project is deployed
-const allowedOrigins = [
-  "http://localhost:5000",
-  "https://meganote.railway.app",
-];
+// TODO: Replace with deployed API URL later
+const allowedOrigins = ["http://localhost:5000"];
 
 module.exports = allowedOrigins;
