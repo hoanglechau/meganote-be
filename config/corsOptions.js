@@ -4,6 +4,7 @@ const allowedOrigins = require("./allowedOrigins");
 const corsOptions = {
   origin: (origin, callback) => {
     // !origin allows other testing apps like Postman to be able to access this API
+    // May need to remove this when deploying the app to clients (no more need for testing with non-origin apps like Postman)
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       // null means no error
       callback(null, true);
