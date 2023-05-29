@@ -59,7 +59,7 @@ const login = async (req, res) => {
     httpOnly: true, //accessible only by web server
     secure: true, //https
     // Using cross-site cookie since we may have our frontend and backend on different domains
-    sameSite: "None", //cross-site cookie
+    // sameSite: "None", //cross-site cookie
     maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
   });
 
