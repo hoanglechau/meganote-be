@@ -1,6 +1,8 @@
 <a name="readme-top"></a>
+
 <!-- PROJECT TITLE -->
-# **Meganote - The ultimate note-taking app** 
+
+# **Meganote - The ultimate note-taking app**
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -36,10 +38,10 @@
   </ol>
 </details>
 
+---
 
-
-***
 <!-- ABOUT THE PROJECT -->
+
 ## **About The Project**
 
 [![Meganote Screen Shot][product-screenshot]](https://example.com)
@@ -56,202 +58,193 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 ### **User Stories**
 
-#### *Authentication*
+#### _Authentication_
 
-* As a user, I can sign in with my username and password
-* As a user, I can choose to stay signed in after refreshing the page
-* As a user, I can sign out from the system
+- As a user, I can sign in with my username and password
+- As a user, I can choose to stay signed in after refreshing the page
+- As a user, I can sign out from the system
 
-#### *Admins and Managers*
+#### _Admins and Managers_
 
-* As ad admin or manager, I can view a list of all the notes in the system
-* As an admin or manager, I can edit the information of existing notes
-* As an admin or manager, I can delete notes from the system
-* As an admin or manager, I can create new notes and assign them to myself or other users
-* As an admin or manager, I can view a list of all the users in the system
-* As an admin or manager, I can create new users with username, password, and role
-* As an admin or manager, I can edit the information of existing users
-* As an admin or manager, I can delete users from the system
+- As ad admin or manager, I can view a list of all the notes in the system
+- As an admin or manager, I can edit the information of existing notes
+- As an admin or manager, I can delete notes from the system
+- As an admin or manager, I can create new notes and assign them to myself or other users
+- As an admin or manager, I can view a list of all the users in the system
+- As an admin or manager, I can create new users with username, password, and role
+- As an admin or manager, I can edit the information of existing users
+- As an admin or manager, I can delete users from the system
 
-### *Employees*
+### _Employees_
 
-* As an employee, I can view a list of the notes assigned to me
-* As an employee, I can edit the information of the notes currently assigned to me
-* As an employee, I can create new notes and assign them to myself or other users
+- As an employee, I can view a list of the notes assigned to me
+- As an employee, I can edit the information of the notes currently assigned to me
+- As an employee, I can create new notes and assign them to myself or other users
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### **Built With**
 
-* [![React][React.js]][React-url]
-* [![React Router][ReactRouter.com]][ReactRouter-url]
-* [![Redux][Redux.js]][Redux-url]
-* [![Material UI][Mui.com]][Mui-url]
-* [![NodeJS][Node.js]][Node-url]
-* [![Express][Express.js]][Express-url]
-* [![MongoDB][MongoDB.com]][MongoDB-url]
-* [![JWT][JWT.io]][JWT-url]
-* [![ESLint][Eslint.org]][Eslint-url]
-* [![Prettier][Prettier.io]][Prettier-url]
-* [![Stylelint][Stylelint.io]][Stylelint-url]
+- [![React][React.js]][React-url]
+- [![React Router][ReactRouter.com]][ReactRouter-url]
+- [![Redux][Redux.js]][Redux-url]
+- [![Material UI][Mui.com]][Mui-url]
+- [![NodeJS][Node.js]][Node-url]
+- [![Express][Express.js]][Express-url]
+- [![MongoDB][MongoDB.com]][MongoDB-url]
+- [![JWT][JWT.io]][JWT-url]
+- [![ESLint][Eslint.org]][Eslint-url]
+- [![Prettier][Prettier.io]][Prettier-url]
+- [![Stylelint][Stylelint.io]][Stylelint-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
 
-
-***
 <!-- API ENDPOINTS -->
+
 ## **API Endpoints**
 
 ### **Auth APIs**
 
 ```js
 /**
-* @route POST /auth
-* @description Log in with username and password
-* @body {username, passsword}
-* @access Public
-*/
+ * @route POST /auth
+ * @description Log in with username and password
+ * @body {username, passsword}
+ * @access Public
+ */
 ```
 
 ```js
 /**
-* @route POST /auth/logout
-* @description Log out and clear cookies if they exist
-* @access Public
-*/
+ * @route POST /auth/logout
+ * @description Log out and clear cookies if they exist
+ * @access Public
+ */
 ```
 
 ```js
 /**
-* @route GET /auth/refresh
-* @description Send a GET request to this endpoint to get a new access token
-* @access Public
-*/
+ * @route GET /auth/refresh
+ * @description Send a GET request to this endpoint to get a new access token
+ * @access Public
+ */
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### **User APIs**
 
 ```js
 /**
-* @route GET /users
-* @description Get all users
-* @access Private - only for Admins and Managers
-*/
+ * @route GET /users
+ * @description Get all users
+ * @access Private - only for Admins and Managers
+ */
 ```
 
 ```js
 /**
-* @route POST /users
-* @description Create a new user
-* @body {username, password, roles}
-* @access Private - only for Admins and Managers
-*/
+ * @route POST /users
+ * @description Create a new user
+ * @body {username, password, roles}
+ * @access Private - only for Admins and Managers
+ */
 ```
 
 ```js
 /**
-* @route PATCH /users
-* @description Update an existing user
-* @body {id, username, roles, active, password}
-* @access Private - only for Admins and Managers
-*/
+ * @route PATCH /users
+ * @description Update an existing user
+ * @body {id, username, roles, active, password}
+ * @access Private - only for Admins and Managers
+ */
 ```
 
 ```js
 /**
-* @route DELETE /users
-* @description Delete an existing user
-* @body {id}
-* @access Private - only for Admins and Managers
-*/
+ * @route DELETE /users
+ * @description Delete an existing user
+ * @body {id}
+ * @access Private - only for Admins and Managers
+ */
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### **Note APIs**
 
 ```js
 /**
-* @route GET /notes
-* @description Get all notes
-* @access Private - for all users
-*/
+ * @route GET /notes
+ * @description Get all notes
+ * @access Private - for all users
+ */
 ```
 
 ```js
 /**
-* @route POST /notes
-* @description Create a new note
-* @body {user, title, text}
-* @access Private - for all users
-*/
+ * @route POST /notes
+ * @description Create a new note
+ * @body {user, title, text}
+ * @access Private - for all users
+ */
 ```
 
 ```js
 /**
-* @route PATCH /notes
-* @description Update an existing note
-* @body {id, user, title, text, completed}
-* @access Private - for all users
-*/
+ * @route PATCH /notes
+ * @description Update an existing note
+ * @body {id, user, title, text, completed}
+ * @access Private - for all users
+ */
 ```
 
 ```js
 /**
-* @route DELETE /notes
-* @description Delete an existing note
-* @body {id}
-* @access Private - only for Admins and Managers
-*/
+ * @route DELETE /notes
+ * @description Delete an existing note
+ * @body {id}
+ * @access Private - only for Admins and Managers
+ */
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
 
-
-***
 <!-- ENTITY RELATIONSHIP DIAGRAM -->
+
 ## **Entity Relationship Diagram**
 
 [![Meganote ERD][erd]](https://example.com)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
 
-
-***
 <!-- GETTING STARTED -->
+
 ## **Getting Started**
 
 ### **Prerequisites**
 
 1. Check your version of Node.js and npm
-    ```sh
-    node -v
-    npm -v
-    ```
+   ```sh
+   node -v
+   npm -v
+   ```
 2. Install Node.js and npm if needed at [https://nodejs.org/en/download](https://nodejs.org/en/download)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 ### **Installation**
 
-#### *Backend*
+#### _Backend_
+
 1. Clone the repo
    ```sh
    git clone https://github.com/hoanglechau/meganote-be.git
@@ -263,11 +256,11 @@ Features for the future: Making a mobile version of the app for iOS and Android.
    ```
 3. Create an `.env` file with the following contents
    ```js
-   MONGO_URI=your_mongodb_uri
-   PORT=your_preferred_port // default: 5000
-   NODE_ENV=development
-   ACCESS_TOKEN_SECRET=your_access_token_secret
-   REFRESH_TOKEN_SECRET=your_refresh_token_secret
+   MONGO_URI = your_mongodb_uri;
+   PORT = your_preferred_port; // default: 5000
+   NODE_ENV = development;
+   ACCESS_TOKEN_SECRET = your_access_token_secret;
+   REFRESH_TOKEN_SECRET = your_refresh_token_secret;
    ```
 4. Generate two different secret keys for `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` using the built-in `crypto` module of `node`
    ```sh
@@ -275,13 +268,13 @@ Features for the future: Making a mobile version of the app for iOS and Android.
    require('crypto').randomBytes(64).toString('hex')
    ```
 5. Replace the default values with your own values for `PORT` (optional), `MONGO_URI`, `ACCESS_TOKEN_SECRET`, and `REFRESH_TOKEN_SECRET` in the `.env` file
-   
 6. Start the server
    ```sh
    npm start
    ```
 
-#### *Frontend*
+#### _Frontend_
+
 1. Clone the repo
    ```sh
    git clone https://github.com/hoanglechau/meganote-fe-v2.git
@@ -293,11 +286,10 @@ Features for the future: Making a mobile version of the app for iOS and Android.
    ```
 3. Create an `.env` file with the following contents
    ```js
-   VITE_NODE_ENV=development
-   VITE_API_URL=your_api_url // default: http://localhost:5000
+   VITE_NODE_ENV = development;
+   VITE_API_URL = your_api_url; // default: http://localhost:5000
    ```
 4. Optional: Replace the value of `VITE_API_URL` with the URL of your deployed API
-   
 5. Build the app
    ```sh
    npm run build
@@ -309,21 +301,22 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
 
-
-***
 <!-- LINKS -->
+
 ## **Links**
 
-* Frontend Repository: [https://github.com/hoanglechau/meganote-fe-v2](https://github.com/hoanglechau/meganote-fe-v2)
-* Backend Repository: [https://github.com/hoanglechau/meganote-be](https://github.com/hoanglechau/meganote-be)
+- Frontend Repository: [https://github.com/hoanglechau/meganote-fe-v2](https://github.com/hoanglechau/meganote-fe-v2)
+- Backend Repository: [https://github.com/hoanglechau/meganote-be](https://github.com/hoanglechau/meganote-be)
+- Deployed Frontend: [https://meganote-fe-v2.vercel.app/](https://meganote-fe-v2.vercel.app/)
+- Deployed Backend: [https://meganote-be-production.up.railway.app/](https://meganote-be-production.up.railway.app/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [product-screenshot]: public/images/Meganote.png
 [erd]: public/images/Meganote%20ERD%20light.png
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
