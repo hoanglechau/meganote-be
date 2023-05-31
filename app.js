@@ -21,6 +21,7 @@ app.use(logger);
 
 // 3rd party middleware to allow the app to receive requests from other origins (Cross-origin resource sharing) -> Make our server available to the public to access
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Built-in middleware to allow the app to receive and parse json data
 app.use(express.json());
