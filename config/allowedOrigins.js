@@ -1,4 +1,5 @@
 const allowedOrigins = [
+  "https://meganote-fe-v2.vercel.app/",
   "https://meganote.netlify.app/",
   "http://localhost:3000",
 ];
