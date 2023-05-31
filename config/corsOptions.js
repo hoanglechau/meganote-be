@@ -7,7 +7,7 @@ const corsOptions = {
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   preflightContinue: false,
   // Set the Access-Control-Allow-Credentials header
-  // credentials: true,
+  credentials: false,
   // The default status code is 204, but 200 can prevent problems on some devices
   optionsSuccessStatus: 200,
 };
