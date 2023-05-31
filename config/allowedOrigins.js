@@ -1,3 +1,3 @@
-const allowedOrigins = ["https://meganote-be-production.up.railway.app", "http://localhost:5000", "https://meganote-be-production.up.railway.app"];
+const allowedOrigins = ["https://meganote.netlify.app/", "http://localhost:3000"];
 
 module.exports = allowedOrigins;
