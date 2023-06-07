@@ -26,7 +26,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // @route POST /users
 // @access Private
 const createUser = asyncHandler(async (req, res) => {
-  const { username, password, roles } = req.body;
+  const { username, password, role } = req.body;
 
   // Check for required data
   // 'Roles' is not required since it already has a default as 'Employee'
@@ -53,11 +53,10 @@ const createUser = asyncHandler(async (req, res) => {
   // Hash the password, put it through 10 salt rounds to ensure that the password is safe. Even when looking at it in the database, we wouldn't know what the password is
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // If roles is not an array or is an empty array, don't include it in the user object
-  const userObject =
-    !Array.isArray(roles) || !roles.length
-      ? { username, password: hashedPassword }
-      : { username, password: hashedPassword, roles };
+  // If role doesn't exist in the request body, don't include it in the user object
+  const userObject = !role
+    ? { username, password: hashedPassword }
+    : { username, password: hashedPassword, role };
 
   // Create and store the new user in the database
   const user = await User.create(userObject);
@@ -76,16 +75,10 @@ const createUser = asyncHandler(async (req, res) => {
 // @route PATCH /users
 // @access Private
 const updateUser = asyncHandler(async (req, res) => {
-  const { id, username, roles, active, password } = req.body;
+  const { id, username, role, active, password } = req.body;
 
   // Check for required data
-  if (
-    !id ||
-    !username ||
-    !Array.isArray(roles) ||
-    !roles.length ||
-    typeof active !== "boolean"
-  ) {
+  if (!id || !username || !role || typeof active !== "boolean") {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Missing required data! Only password is optional!" });
@@ -117,7 +110,7 @@ const updateUser = asyncHandler(async (req, res) => {
   // Update the user with the new data
   // Can only do this if these properties exist in the Mongoose User model
   user.username = username;
-  user.roles = roles;
+  user.role = role;
   user.active = active;
 
   if (password) {
