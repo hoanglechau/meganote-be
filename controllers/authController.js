@@ -33,13 +33,13 @@ const login = async (req, res) => {
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: "Unauthorized!" });
 
-  // Create access token containing username and roles
+  // Create access token containing username and role
   const accessToken = jwt.sign(
     {
       // Insert this information into the access token
       UserInfo: {
         username: foundUser.username,
-        roles: foundUser.roles,
+        role: foundUser.role,
       },
     },
     // Pass in the environment variable that contains the secret token
@@ -63,7 +63,7 @@ const login = async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
   });
 
-  // Send accessToken containing username and roles
+  // Send accessToken containing username and role
   res.json({ accessToken });
 };
 
@@ -108,7 +108,7 @@ const refresh = (req, res) => {
         {
           UserInfo: {
             username: foundUser.username,
-            roles: foundUser.roles,
+            role: foundUser.role,
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
