@@ -29,10 +29,10 @@ const getAllNotes = async (req, res) => {
 // @route POST /notes
 // @access Private
 const createNote = async (req, res) => {
-  const { user, title, text } = req.body;
+  const { user, title, text, status } = req.body;
 
   // Check for required data
-  if (!user || !title || !text) {
+  if (!user || !title || !text || !status) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Missing required data" });
@@ -52,7 +52,7 @@ const createNote = async (req, res) => {
   }
 
   // Create and store the new note
-  const note = await Note.create({ user, title, text });
+  const note = await Note.create({ user, title, text, status });
 
   if (note) {
     return res
@@ -69,10 +69,10 @@ const createNote = async (req, res) => {
 // @route PATCH /notes
 // @access Private
 const updateNote = async (req, res) => {
-  const { id, user, title, text, completed } = req.body;
+  const { id, user, title, text, status } = req.body;
 
   // Check for required data
-  if (!id || !user || !title || !text || typeof completed !== "boolean") {
+  if (!id || !user || !title || !text || !status) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Missing required data" });
@@ -104,7 +104,7 @@ const updateNote = async (req, res) => {
   note.user = user;
   note.title = title;
   note.text = text;
-  note.completed = completed;
+  note.status = status;
 
   const updatedNote = await note.save();
 
