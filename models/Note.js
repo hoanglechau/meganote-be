@@ -16,9 +16,9 @@ const noteSchema = new mongoose.Schema(
       type: String,
       default: true,
     },
-    completed: {
-      type: Boolean,
-      default: false,
+    status: {
+      type: String,
+      default: "Open",
     },
   },
   { timestamps: true }
