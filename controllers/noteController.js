@@ -25,6 +25,133 @@ const getAllNotes = async (req, res) => {
   res.status(StatusCodes.OK).json(notesWithUser);
 };
 
+const getNotes = async (req, res, next) => {
+  let { page, limit, ...filter } = { ...req.query };
+
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 10;
+
+  const filterConditions = [{ isDeleted: false }];
+  if (filter.ticket) {
+    filterConditions.push({
+      ticket: filter.ticket,
+    });
+  }
+  if (filter.title) {
+    filterConditions.push({
+      title: { $regex: filter.title, $options: "i" },
+    });
+  }
+  if (filter.status) {
+    filterConditions.push({
+      status: { $ne: filter.status },
+    });
+  }
+  const filterCriteria = filterConditions.length
+    ? { $and: filterConditions }
+    : {};
+
+  const count = await Note.countDocuments(filterCriteria);
+  const totalPage = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  let notes = await Note.find(filterCriteria)
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(limit);
+
+  if (!notes?.length) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No notes found!" });
+  }
+
+  // Add username to each note before sending the response
+  const notesWithUser = await Promise.all(
+    notes.map(async note => {
+      const user = await User.findById(note.user);
+      if (user) {
+        return {
+          _id: note._id,
+          title: note.title,
+          text: note.text,
+          username: user.username,
+          user: note.user,
+          status: note.status,
+          createdAt: note.createdAt,
+          updatedAt: note.updatedAt,
+          ticket: note.ticket,
+          __v: note.__v,
+        };
+      }
+      return {
+        _id: note._id,
+        title: note.title,
+        text: note.text,
+        username: "Unassigned",
+        user: note.user,
+        status: note.status,
+        createdAt: note.createdAt,
+        updatedAt: note.updatedAt,
+        ticket: note.ticket,
+        __v: note.__v,
+      };
+    })
+  );
+
+  // Not using "return" because we're at the end of the function here
+  return res
+    .status(StatusCodes.OK)
+    .json({ notes: notesWithUser, totalPage, count });
+};
+
+// @desc Get a single user by their username
+// @route GET /users
+// @access Private
+const getSingleNote = async (req, res) => {
+  const note = await Note.findById(req.params.id);
+  if (!note) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: `No note with id: ${req.params.id}` });
+  }
+
+  // Add username to each note before sending the response
+  const noteWithUser = async note => {
+    const user = await User.findById(note.user);
+    if (user) {
+      return {
+        _id: note._id,
+        title: note.title,
+        text: note.text,
+        username: user.username,
+        user: note.user,
+        status: note.status,
+        createdAt: note.createdAt,
+        updatedAt: note.updatedAt,
+        ticket: note.ticket,
+        __v: note.__v,
+      };
+    }
+    return {
+      _id: note._id,
+      title: note.title,
+      text: note.text,
+      username: "Unassigned",
+      user: note.user,
+      status: note.status,
+      createdAt: note.createdAt,
+      updatedAt: note.updatedAt,
+      ticket: note.ticket,
+      __v: note.__v,
+    };
+  };
+
+  const noteResult = await noteWithUser(note);
+
+  res.status(StatusCodes.OK).json({ note: noteResult });
+};
+
 // @desc Create new note
 // @route POST /notes
 // @access Private
@@ -117,7 +244,7 @@ const updateNote = async (req, res) => {
 // @route DELETE /notes
 // @access Private
 const deleteNote = async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params;
 
   // Check for required data
   if (!id) {
@@ -145,6 +272,8 @@ const deleteNote = async (req, res) => {
 
 module.exports = {
   getAllNotes,
+  getNotes,
+  getSingleNote,
   createNote,
   updateNote,
   deleteNote,
