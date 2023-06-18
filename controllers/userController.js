@@ -22,6 +22,75 @@ const getAllUsers = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(users);
 });
 
+const getUsers = asyncHandler(async (req, res, next) => {
+  let { page, limit, ...filter } = { ...req.query };
+
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 10;
+
+  const filterConditions = [{ isDeleted: false }];
+  if (filter.username) {
+    filterConditions.push({
+      username: { $regex: filter.username, $options: "i" },
+    });
+  }
+  if (filter.role) {
+    filterConditions.push({
+      role: { $regex: filter.role, $options: "i" },
+    });
+  }
+  if (filter.active) {
+    filterConditions.push({
+      active: filter.active,
+    });
+  }
+  const filterCriteria = filterConditions.length
+    ? { $and: filterConditions }
+    : {};
+
+  const count = await User.countDocuments(filterCriteria);
+  const totalPage = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  let users = await User.find(filterCriteria)
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(limit);
+
+  if (!users?.length) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No users found!" });
+  }
+  // Not using "return" because we're at the end of the function here
+  res.status(StatusCodes.OK).json({ users, totalPage, count });
+});
+
+const getCurrentUser = asyncHandler(async (req, res, next) => {
+  const currentUserId = req.user._id;
+
+  const user = await User.findById(currentUserId);
+  if (!user)
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "User not found!" });
+
+  res.status(StatusCodes.OK).json(user);
+});
+
+// @desc Get a single user by their username
+// @route GET /users
+// @access Private
+const getSingleUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: `No user with id: ${req.params.id}` });
+  }
+  res.status(StatusCodes.OK).json({ user });
+});
+
 // @desc Create new user
 // @route POST /users
 // @access Private
@@ -76,6 +145,7 @@ const createUser = asyncHandler(async (req, res) => {
 // @access Private
 const updateUser = asyncHandler(async (req, res) => {
   const { id, username, role, active, password } = req.body;
+  console.log("req body", req.body);
 
   // Check for required data
   if (!id || !username || !role || typeof active !== "boolean") {
@@ -130,13 +200,12 @@ const updateUser = asyncHandler(async (req, res) => {
 // @route DELETE /users
 // @access Private
 const deleteUser = asyncHandler(async (req, res) => {
-  const { id } = req.body;
-
+  const { id } = req.params;
   // Check for required data
   if (!id) {
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Missing required data!" });
+      .json({ req: req.body, message: "Missing required data!" });
   }
 
   // Check if the user has assigned notes
@@ -165,6 +234,9 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 module.exports = {
   getAllUsers,
+  getUsers,
+  getCurrentUser,
+  getSingleUser,
   createUser,
   updateUser,
   deleteUser,
