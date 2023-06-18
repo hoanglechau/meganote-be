@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const {
   getAllUsers,
+  getUsers,
+  getCurrentUser,
+  getSingleUser,
   createUser,
   updateUser,
   deleteUser,
@@ -12,11 +15,10 @@ const verifyJWT = require("../middleware/verifyJWT");
 router.use(verifyJWT);
 
 // Routing with controller methods for different HTTP methods coming into the users route
-router
-  .route("/")
-  .get(getAllUsers)
-  .post(createUser)
-  .patch(updateUser)
-  .delete(deleteUser);
+router.route("/").get(getUsers).post(createUser);
+
+router.route("/all").get(getAllUsers);
+router.route("/me").get(getCurrentUser);
+router.route("/:id").get(getSingleUser).patch(updateUser).delete(deleteUser);
 
 module.exports = router;
