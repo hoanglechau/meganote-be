@@ -3,6 +3,55 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
 
+// @desc Create new user
+// @route POST /users
+// @access Private
+const register = async (req, res) => {
+  const { username, password, role } = req.body;
+
+  // Check for required data
+  // 'Roles' is not required since it already has a default as 'Employee'
+  if (!username || !password) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Missing required data!" });
+  }
+
+  // Check if the username already exists
+  // Use exec() to get a fully-fledged promise
+  // Use collation to make the search case-insensitive -> Check for both lowercase and uppercase characters ('Hoang' and 'hoang' are considered duplicate users)
+  const existingUser = await User.findOne({ username })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
+
+  if (existingUser) {
+    return res
+      .status(StatusCodes.CONFLICT)
+      .json({ message: "This username already exists!" });
+  }
+
+  // Hash the password, put it through 10 salt rounds to ensure that the password is safe. Even when looking at it in the database, we wouldn't know what the password is
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // If role doesn't exist in the request body, don't include it in the user object
+  const userObject = !role
+    ? { username, password: hashedPassword }
+    : { username, password: hashedPassword, role };
+
+  // Create and store the new user in the database
+  const user = await User.create(userObject);
+
+  // Check if the user was created successfully
+  if (user) {
+    res
+      .status(StatusCodes.CREATED)
+      .json({ message: `New user ${username} created successfully!` });
+  } else {
+    res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid user data!" });
+  }
+};
+
 // @desc Login
 // @route POST /auth
 // @access Public
@@ -44,7 +93,7 @@ const login = async (req, res) => {
     },
     // Pass in the environment variable that contains the secret token
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "7d" }
   );
 
   // Create refresh token containing username
@@ -64,7 +113,7 @@ const login = async (req, res) => {
   });
 
   // Send accessToken containing username and role
-  res.json({ accessToken });
+  res.json({ user: foundUser, accessToken, message: "Login successful!" });
 };
 
 // @desc Refresh
@@ -112,10 +161,10 @@ const refresh = (req, res) => {
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "15m" }
+        { expiresIn: "7d" }
       );
 
-      res.json({ accessToken });
+      res.json({ user: foundUser, accessToken, message: "Refreshed!" });
     }
   );
 };
@@ -133,6 +182,7 @@ const logout = (req, res) => {
 };
 
 module.exports = {
+  register,
   login,
   refresh,
   logout,
