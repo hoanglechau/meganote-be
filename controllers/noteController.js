@@ -76,6 +76,7 @@ const getNotes = async (req, res, next) => {
           title: note.title,
           text: note.text,
           username: user.username,
+          role: user.role,
           user: note.user,
           status: note.status,
           createdAt: note.createdAt,
@@ -89,6 +90,7 @@ const getNotes = async (req, res, next) => {
         title: note.title,
         text: note.text,
         username: "Unassigned",
+        role: "",
         user: note.user,
         status: note.status,
         createdAt: note.createdAt,
@@ -116,7 +118,7 @@ const getSingleNote = async (req, res) => {
       .json({ message: `No note with id: ${req.params.id}` });
   }
 
-  // Add username to each note before sending the response
+  // Add username and user's role to each note before sending the response
   const noteWithUser = async note => {
     const user = await User.findById(note.user);
     if (user) {
@@ -125,6 +127,7 @@ const getSingleNote = async (req, res) => {
         title: note.title,
         text: note.text,
         username: user.username,
+        role: user.role,
         user: note.user,
         status: note.status,
         createdAt: note.createdAt,
@@ -138,6 +141,7 @@ const getSingleNote = async (req, res) => {
       title: note.title,
       text: note.text,
       username: "Unassigned",
+      role: "",
       user: note.user,
       status: note.status,
       createdAt: note.createdAt,
@@ -157,6 +161,7 @@ const getSingleNote = async (req, res) => {
 // @access Private
 const createNote = async (req, res) => {
   const { user, title, text, status } = req.body;
+  console.log("req body", req.body);
 
   // Check for required data
   if (!user || !title || !text || !status) {
@@ -253,8 +258,12 @@ const deleteNote = async (req, res) => {
       .json({ message: "Missing required data" });
   }
 
-  // Check if the note exists
-  const note = await Note.findById(id).exec();
+  // Check if the user exists
+  const note = await Note.findOneAndUpdate(
+    { _id: id },
+    { isDeleted: true },
+    { new: true }
+  ).exec();
 
   if (!note) {
     return res
@@ -262,11 +271,8 @@ const deleteNote = async (req, res) => {
       .json({ message: "Note not found!" });
   }
 
-  // deletedNote contains the data of the deleted note
-  const deletedNote = await note.deleteOne();
-
   res.status(StatusCodes.OK).json({
-    message: `Note "${deletedNote.title}" with ID ${deletedNote._id} deleted successfully!`,
+    message: `Note "${note.title}" with ID ${note._id} deleted successfully!`,
   });
 };
 
