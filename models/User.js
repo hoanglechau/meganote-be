@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    avatarUrl: {
+      type: String,
+      require: false,
+      default: "https://i.redd.it/6qk9jq22ho541.jpg",
+    },
     role: {
       type: String,
       default: "Employee",
@@ -17,6 +22,11 @@ const userSchema = new mongoose.Schema(
     active: {
       type: Boolean,
       default: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      select: false,
     },
   },
   { timestamps: true }
