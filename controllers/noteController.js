@@ -242,7 +242,7 @@ const updateNote = async (req, res) => {
 
   res
     .status(StatusCodes.OK)
-    .json(`'${updatedNote.title}' updated successfully!`);
+    .json(`'Note #${updatedNote.ticket}' updated successfully!`);
 };
 
 // @desc Delete a note
@@ -272,7 +272,7 @@ const deleteNote = async (req, res) => {
   }
 
   res.status(StatusCodes.OK).json({
-    message: `Note "${note.title}" with ID ${note._id} deleted successfully!`,
+    message: `Note #${note.ticket} deleted successfully!`,
   });
 };
 
