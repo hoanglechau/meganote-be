@@ -136,7 +136,7 @@ const createUser = async (req, res) => {
   if (user) {
     res
       .status(StatusCodes.CREATED)
-      .json({ user, message: `New user ${username} created successfully!` });
+      .json({ user, message: `New user "${username}" created successfully!` });
   } else {
     res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid user data!" });
   }
@@ -197,7 +197,7 @@ const updateUser = async (req, res) => {
   console.log("updated user", updatedUser);
   res.status(StatusCodes.OK).json({
     updatedUser,
-    message: `Username ${updatedUser.username} updated successfully!`,
+    message: `User "${updatedUser.username}" updated successfully!`,
   });
 };
 
@@ -238,7 +238,7 @@ const deleteUser = async (req, res) => {
   }
 
   res.status(StatusCodes.OK).json({
-    message: `User ${user.username} with ID ${user._id} deleted successfully!`,
+    message: `User "${user.username}" deleted successfully!`,
   });
 };
 
