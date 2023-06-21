@@ -2,17 +2,18 @@ const User = require("../models/User");
 const Note = require("../models/Note");
 // Since we're using asyncHandler, we don't need to use try-catch blocks anymore. asyncHandler will catch any errors and pass them to the next middleware. We can then use our custom error handler to handle the errors
 // However, since we're also using 'express-async-errors', actually 'express-async-handler' is not necessary anymore. I'm just trying it out in this controller. The other controllerls don't use this package
-const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const { StatusCodes } = require("http-status-codes");
 
 // @desc Get all users
 // @route GET /users
 // @access Private
-const getAllUsers = asyncHandler(async (req, res) => {
+const getAllUsers = async (req, res) => {
   // Not showing the password field
   // Enabling the lean option tells Mongoose to skip instantiating a full Mongoose document and just return a plain old JS object (POJOs)
-  const users = await User.find().select("-password").lean();
+  const users = await User.find({ isDeleted: false })
+    .select("-password")
+    .lean();
   if (!users?.length) {
     return res
       .status(StatusCodes.BAD_REQUEST)
@@ -20,9 +21,9 @@ const getAllUsers = asyncHandler(async (req, res) => {
   }
   // Not using "return" because we're at the end of the function here
   res.status(StatusCodes.OK).json(users);
-});
+};
 
-const getUsers = asyncHandler(async (req, res, next) => {
+const getUsers = async (req, res, next) => {
   let { page, limit, ...filter } = { ...req.query };
 
   page = parseInt(page) || 1;
@@ -44,6 +45,7 @@ const getUsers = asyncHandler(async (req, res, next) => {
       active: filter.active,
     });
   }
+  console.log(filterConditions);
   const filterCriteria = filterConditions.length
     ? { $and: filterConditions }
     : {};
@@ -64,9 +66,9 @@ const getUsers = asyncHandler(async (req, res, next) => {
   }
   // Not using "return" because we're at the end of the function here
   res.status(StatusCodes.OK).json({ users, totalPage, count });
-});
+};
 
-const getCurrentUser = asyncHandler(async (req, res, next) => {
+const getCurrentUser = async (req, res, next) => {
   const currentUserId = req.user._id;
 
   const user = await User.findById(currentUserId);
@@ -76,12 +78,12 @@ const getCurrentUser = asyncHandler(async (req, res, next) => {
       .json({ message: "User not found!" });
 
   res.status(StatusCodes.OK).json(user);
-});
+};
 
 // @desc Get a single user by their username
 // @route GET /users
 // @access Private
-const getSingleUser = asyncHandler(async (req, res) => {
+const getSingleUser = async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
     return res
@@ -89,14 +91,14 @@ const getSingleUser = asyncHandler(async (req, res) => {
       .json({ message: `No user with id: ${req.params.id}` });
   }
   res.status(StatusCodes.OK).json({ user });
-});
+};
 
 // @desc Create new user
 // @route POST /users
 // @access Private
-const createUser = asyncHandler(async (req, res) => {
-  const { username, password, role } = req.body;
-
+const createUser = async (req, res) => {
+  const { username, password, role, avatarUrl } = req.body;
+  console.log("create user request", req.body);
   // Check for required data
   // 'Roles' is not required since it already has a default as 'Employee'
   if (!username || !password) {
@@ -124,8 +126,8 @@ const createUser = asyncHandler(async (req, res) => {
 
   // If role doesn't exist in the request body, don't include it in the user object
   const userObject = !role
-    ? { username, password: hashedPassword }
-    : { username, password: hashedPassword, role };
+    ? { username, password: hashedPassword, avatarUrl }
+    : { username, password: hashedPassword, avatarUrl, role };
 
   // Create and store the new user in the database
   const user = await User.create(userObject);
@@ -134,17 +136,17 @@ const createUser = asyncHandler(async (req, res) => {
   if (user) {
     res
       .status(StatusCodes.CREATED)
-      .json({ message: `New user ${username} created successfully!` });
+      .json({ user, message: `New user ${username} created successfully!` });
   } else {
     res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid user data!" });
   }
-});
+};
 
 // @desc Update a user
 // @route PATCH /users
 // @access Private
-const updateUser = asyncHandler(async (req, res) => {
-  const { id, username, role, active, password } = req.body;
+const updateUser = async (req, res) => {
+  const { id, username, role, active, password, avatarUrl } = req.body;
   console.log("req body", req.body);
 
   // Check for required data
@@ -182,6 +184,7 @@ const updateUser = asyncHandler(async (req, res) => {
   user.username = username;
   user.role = role;
   user.active = active;
+  user.avatarUrl = avatarUrl;
 
   if (password) {
     // Hash the new password with 10 salt rounds
@@ -191,15 +194,17 @@ const updateUser = asyncHandler(async (req, res) => {
   // Save the updated user in the database
   const updatedUser = await user.save();
 
+  console.log("updated user", updatedUser);
   res.status(StatusCodes.OK).json({
+    updatedUser,
     message: `Username ${updatedUser.username} updated successfully!`,
   });
-});
+};
 
 // @desc Delete a user
 // @route DELETE /users
 // @access Private
-const deleteUser = asyncHandler(async (req, res) => {
+const deleteUser = async (req, res) => {
   const { id } = req.params;
   // Check for required data
   if (!id) {
@@ -209,28 +214,33 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 
   // Check if the user has assigned notes
-  const notes = await Note.findOne({ user: id }).lean().exec();
-  if (notes?.length) {
+  const notes = await Note.findOne({ user: id, isDeleted: false })
+    .lean()
+    .exec();
+  console.log("user's notes", notes);
+  if (notes || notes?.length) {
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Cannot delete users with assigned notes" });
+      .json({ message: "Cannot delete users with assigned notes!" });
   }
 
   // Check if the user exists
-  const user = await User.findById(id).exec();
+  const user = await User.findOneAndUpdate(
+    { _id: id },
+    { isDeleted: true },
+    { new: true }
+  ).exec();
+
   if (!user) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "User not found!" });
   }
 
-  // "deletedUser" will hold the deleted user's information
-  const deletedUser = await user.deleteOne();
-
   res.status(StatusCodes.OK).json({
-    message: `Username ${deletedUser.username} with ID ${deletedUser._id} deleted successfully!`,
+    message: `User ${user.username} with ID ${user._id} deleted successfully!`,
   });
-});
+};
 
 module.exports = {
   getAllUsers,
