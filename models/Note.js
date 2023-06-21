@@ -20,6 +20,11 @@ const noteSchema = new mongoose.Schema(
       type: String,
       default: "Open",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      select: false,
+    },
   },
   { timestamps: true }
 );
