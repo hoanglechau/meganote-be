@@ -47,7 +47,7 @@ const register = async (req, res) => {
   if (user) {
     res
       .status(StatusCodes.CREATED)
-      .json({ message: `New user ${username} created successfully!` });
+      .json({ message: `New user ${username} registered successfully!` });
   } else {
     res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid user data!" });
   }
@@ -116,7 +116,11 @@ const login = async (req, res) => {
   });
 
   // Send accessToken containing username and role
-  res.json({ user: foundUser, accessToken, message: "Login successful!" });
+  res.json({
+    user: foundUser,
+    accessToken,
+    message: "Logged in successfully!",
+  });
 };
 
 // @desc Refresh
