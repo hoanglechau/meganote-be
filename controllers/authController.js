@@ -7,7 +7,8 @@ const { StatusCodes } = require("http-status-codes");
 // @route POST /users
 // @access Private
 const register = async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, password, role, avatarUrl } = req.body;
+  console.log("req body: ", req.body);
 
   // Check for required data
   // 'Roles' is not required since it already has a default as 'Employee'
@@ -36,8 +37,8 @@ const register = async (req, res) => {
 
   // If role doesn't exist in the request body, don't include it in the user object
   const userObject = !role
-    ? { username, password: hashedPassword }
-    : { username, password: hashedPassword, role };
+    ? { username, password: hashedPassword, avatarUrl }
+    : { username, password: hashedPassword, role, avatarUrl };
 
   // Create and store the new user in the database
   const user = await User.create(userObject);
@@ -62,7 +63,7 @@ const login = async (req, res) => {
   if (!username || !password) {
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Missing required data!" });
+      .json({ message: "Missing username or password!" });
   }
 
   // Check if user exists or is active
@@ -71,7 +72,7 @@ const login = async (req, res) => {
   if (!foundUser || !foundUser.active) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Unauthorized!" });
+      .json({ message: "Username not found!" });
   }
 
   // Compare the password that we receive and the password stored in the database
@@ -80,7 +81,7 @@ const login = async (req, res) => {
   if (!match)
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Unauthorized!" });
+      .json({ message: "Incorrect password!" });
 
   // Create access token containing username and role
   const accessToken = jwt.sign(
@@ -89,6 +90,8 @@ const login = async (req, res) => {
       UserInfo: {
         username: foundUser.username,
         role: foundUser.role,
+        avatarUrl: foundUser.avatarUrl,
+        _id: foundUser._id,
       },
     },
     // Pass in the environment variable that contains the secret token
