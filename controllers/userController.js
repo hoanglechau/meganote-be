@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const { StatusCodes } = require("http-status-codes");
 
 // @desc Get all users
-// @route GET /users
+// @route GET /users/all
 // @access Private
 const getAllUsers = async (req, res) => {
   // Not showing the password field
@@ -23,6 +23,10 @@ const getAllUsers = async (req, res) => {
   res.status(StatusCodes.OK).json(users);
 };
 
+// @desc Get users with search query, filter, and paginations
+// @route GET /users
+// @query page, limit, username, role, active
+// @access Private
 const getUsers = async (req, res, next) => {
   let { page, limit, ...filter } = { ...req.query };
 
@@ -68,20 +72,9 @@ const getUsers = async (req, res, next) => {
   res.status(StatusCodes.OK).json({ users, totalPage, count });
 };
 
-const getCurrentUser = async (req, res, next) => {
-  const currentUserId = req.user._id;
-
-  const user = await User.findById(currentUserId);
-  if (!user)
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "User not found!" });
-
-  res.status(StatusCodes.OK).json(user);
-};
-
-// @desc Get a single user by their username
-// @route GET /users
+// @desc Get a single user by their id
+// @route GET /users/:id
+// @params id
 // @access Private
 const getSingleUser = async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -93,8 +86,9 @@ const getSingleUser = async (req, res) => {
   res.status(StatusCodes.OK).json({ user });
 };
 
-// @desc Create new user
+// @desc Create a new user
 // @route POST /users
+// @body username, password, role, avatarUrl
 // @access Private
 const createUser = async (req, res) => {
   const { username, password, role, avatarUrl } = req.body;
@@ -142,8 +136,9 @@ const createUser = async (req, res) => {
   }
 };
 
-// @desc Update a user
-// @route PATCH /users
+// @desc Update an existing user
+// @route PATCH /users/:id
+// @body id, username, role, active, password, avatarUrl
 // @access Private
 const updateUser = async (req, res) => {
   const { id, username, role, active, password, avatarUrl } = req.body;
@@ -201,8 +196,9 @@ const updateUser = async (req, res) => {
   });
 };
 
-// @desc Delete a user
-// @route DELETE /users
+// @desc Soft delete an existing user
+// @route DELETE /users/:id
+// @params id
 // @access Private
 const deleteUser = async (req, res) => {
   const { id } = req.params;
@@ -245,9 +241,22 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getAllUsers,
   getUsers,
-  getCurrentUser,
   getSingleUser,
   createUser,
   updateUser,
   deleteUser,
 };
+
+/*
+const getCurrentUser = async (req, res, next) => {
+  const currentUserId = req.user._id;
+
+  const user = await User.findById(currentUserId);
+  if (!user)
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "User not found!" });
+
+  res.status(StatusCodes.OK).json(user);
+};
+*/
