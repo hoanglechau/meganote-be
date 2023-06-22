@@ -2,6 +2,10 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const { StatusCodes } = require("http-status-codes");
 
+// @desc Get the currently logged-in user's account by their id
+// @route GET /account/:id
+// @params id
+// @access Private
 const getSingleAccount = async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
@@ -12,6 +16,10 @@ const getSingleAccount = async (req, res) => {
   res.status(StatusCodes.OK).json({ user });
 };
 
+// @desc Update the currently logged-in user's account
+// @route PATCH /account/:id
+// @body id, username, password, avatarUrl
+// @access Private
 const updateAccount = async (req, res) => {
   const { id, username, password, avatarUrl } = req.body;
   console.log("req body", req.body);
