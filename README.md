@@ -45,6 +45,8 @@
 
 ## **About The Project**
 
+[![Meganote Public Screen Shot][public-screenshot]](https://example.com)
+
 [![Meganote Screen Shot][product-screenshot]](https://example.com)
 
 ### **Project Description**
@@ -378,6 +380,7 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
+[public-screenshot]: public/images/Meganote-public.png
 [product-screenshot]: public/images/Meganote.png
 [erd]: public/images/Meganote%20ERD.png
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
