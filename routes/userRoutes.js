@@ -18,7 +18,6 @@ router.use(verifyJWT);
 router.route("/").get(getUsers).post(createUser);
 
 router.route("/all").get(getAllUsers);
-router.route("/me").get(getCurrentUser);
 router.route("/:id").get(getSingleUser).patch(updateUser).delete(deleteUser);
 
 module.exports = router;
