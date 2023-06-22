@@ -9,7 +9,6 @@ const { StatusCodes } = require("http-status-codes");
 // @access Public
 const register = async (req, res) => {
   const { username, password, role, avatarUrl } = req.body;
-  console.log("req body: ", req.body);
 
   // Check for required data
   // 'Roles' is not required since it already has a default as 'Employee'
