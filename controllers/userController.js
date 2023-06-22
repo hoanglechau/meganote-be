@@ -49,7 +49,7 @@ const getUsers = async (req, res, next) => {
       active: filter.active,
     });
   }
-  console.log(filterConditions);
+
   const filterCriteria = filterConditions.length
     ? { $and: filterConditions }
     : {};
@@ -92,7 +92,6 @@ const getSingleUser = async (req, res) => {
 // @access Private
 const createUser = async (req, res) => {
   const { username, password, role, avatarUrl } = req.body;
-  console.log("create user request", req.body);
   // Check for required data
   // 'Roles' is not required since it already has a default as 'Employee'
   if (!username || !password) {
@@ -142,7 +141,6 @@ const createUser = async (req, res) => {
 // @access Private
 const updateUser = async (req, res) => {
   const { id, username, role, active, password, avatarUrl } = req.body;
-  console.log("req body", req.body);
 
   // Check for required data
   if (!id || !username || !role || typeof active !== "boolean") {
@@ -189,7 +187,6 @@ const updateUser = async (req, res) => {
   // Save the updated user in the database
   const updatedUser = await user.save();
 
-  console.log("updated user", updatedUser);
   res.status(StatusCodes.OK).json({
     updatedUser,
     message: `User "${updatedUser.username}" updated successfully!`,
@@ -213,7 +210,7 @@ const deleteUser = async (req, res) => {
   const notes = await Note.findOne({ user: id, isDeleted: false })
     .lean()
     .exec();
-  console.log("user's notes", notes);
+
   if (notes || notes?.length) {
     return res
       .status(StatusCodes.BAD_REQUEST)
