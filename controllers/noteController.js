@@ -3,7 +3,7 @@ const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 
 // @desc Get all notes
-// @route GET /notes
+// @route GET /notes/all
 // @access Private
 const getAllNotes = async (req, res) => {
   // Get all notes from MongoDB
@@ -25,6 +25,10 @@ const getAllNotes = async (req, res) => {
   res.status(StatusCodes.OK).json(notesWithUser);
 };
 
+// @desc Get notes with search query, filter, and paginations
+// @route GET /notes
+// @query page, limit, ticket, title, status
+// @access Private
 const getNotes = async (req, res, next) => {
   let { page, limit, ...filter } = { ...req.query };
 
@@ -107,8 +111,9 @@ const getNotes = async (req, res, next) => {
     .json({ notes: notesWithUser, totalPage, count });
 };
 
-// @desc Get a single user by their username
-// @route GET /users
+// @desc Get a single note by its id
+// @route GET /notes/:id
+// @params id
 // @access Private
 const getSingleNote = async (req, res) => {
   const note = await Note.findById(req.params.id);
@@ -156,8 +161,9 @@ const getSingleNote = async (req, res) => {
   res.status(StatusCodes.OK).json({ note: noteResult });
 };
 
-// @desc Create new note
+// @desc Create a new note
 // @route POST /notes
+// @body user, title, text, status
 // @access Private
 const createNote = async (req, res) => {
   const { user, title, text, status } = req.body;
@@ -197,8 +203,9 @@ const createNote = async (req, res) => {
   }
 };
 
-// @desc Update a note
-// @route PATCH /notes
+// @desc Update an existing note
+// @route PATCH /notes/:id
+// @body id, user, title, text, status
 // @access Private
 const updateNote = async (req, res) => {
   const { id, user, title, text, status } = req.body;
@@ -245,8 +252,9 @@ const updateNote = async (req, res) => {
     .json(`'Note #${updatedNote.ticket}' updated successfully!`);
 };
 
-// @desc Delete a note
-// @route DELETE /notes
+// @desc Soft delete an existing note
+// @route DELETE /notes/:id
+// @params id
 // @access Private
 const deleteNote = async (req, res) => {
   const { id } = req.params;
