@@ -2,7 +2,7 @@
 
 <!-- PROJECT TITLE -->
 
-# **Meganote - The ultimate note-taking app**
+# **Meganote - The ultimate task management app**
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -21,6 +21,7 @@
       <ul>
         <li><a href="#auth-apis">Auth APIs</a></li>
         <li><a href="#user-apis">User APIs</a></a></li>
+        <li><a href="#account-apis">Account APIs</a></a></li>
         <li><a href="#note-apis">Note APIs</a></li>
       </ul>
     </li>
@@ -64,24 +65,33 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 - As a user, I can sign in with my username and password
 - As a user, I can choose to stay signed in after refreshing the page
+- As a user, I can edit my own username, avatar URL, and password
 - As a user, I can sign out from the system
 
-#### _Admins and Managers_
+#### _Admin_
 
-- As ad admin or manager, I can view a list of all the notes in the system
-- As an admin or manager, I can edit the information of existing notes
-- As an admin or manager, I can delete notes from the system
-- As an admin or manager, I can create new notes and assign them to myself or other users
-- As an admin or manager, I can view a list of all the users in the system
-- As an admin or manager, I can create new users with username, password, and role
-- As an admin or manager, I can edit the information of existing users
-- As an admin or manager, I can delete users from the system
+- As an admin, I can view a list of all the notes in the system
+- As an admin, I can edit the information of all existing notes
+- As an admin, I can delete my own notes, and the notes of managers and employees, but I cannot delete the notes of other admins
+- As an admin, I can create new notes and assign them to myself, other admins, and any users
+- As an admin, I can view a list of all the users in the system
+- As an admin, I can create new users with username, avatar URL, password, and role (admin, manager, or employee)
+- As an admin, I can edit the information of all existing users
+- As an admin, I can delete all users from the system
 
-### _Employees_
+#### _Manager_
+
+- As a manager, I can view a list of all the notes in the system except the notes of admins
+- As a manager, I can edit the information of all existing notes except the notes of admins
+- As a manager, I can delete my own notes, and the notes employees, but I cannot delete the notes of other managers. I cannot delete admins' notes
+- As a manager, I can create new notes and assign them to myself, other managers, and employees. I cannot assign notes to admins
+- As a manager, I can view a list of all the users in the system except admins
+
+#### _Employee_
 
 - As an employee, I can view a list of the notes assigned to me
 - As an employee, I can edit the information of the notes currently assigned to me
-- As an employee, I can create new notes and assign them to myself or other users
+- As an employee, I can create new notes and assign them to myself or other employees. I cannot assign notes to admins or managers
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -120,16 +130,9 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 ```js
 /**
- * @route POST /auth/logout
- * @description Log out and clear cookies if they exist
- * @access Public
- */
-```
-
-```js
-/**
- * @route GET /auth/refresh
- * @description Send a GET request to this endpoint to get a new access token
+ * @route POST /auth/register
+ * @description Register new user (for demo purposes only)
+ * @body {username, password, role, avatarUrl}
  * @access Public
  */
 ```
@@ -141,8 +144,26 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 ```js
 /**
  * @route GET /users
+ * @description Get users with search query, filter, and paginations
+ * @query {page, limit, username, role, active}
+ * @access Private - only for Admins
+ */
+```
+
+```js
+/**
+ * @route GET /users/all
  * @description Get all users
- * @access Private - only for Admins and Managers
+ * @access Private - only for Admins
+ */
+```
+
+```js
+/**
+ * @route GET /users/:id
+ * @description Get a single user by their id
+ * @params {id}
+ * @access Private - only for Admins
  */
 ```
 
@@ -150,8 +171,8 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 /**
  * @route POST /users
  * @description Create a new user
- * @body {username, password, roles}
- * @access Private - only for Admins and Managers
+ * @body {username, password, role, avatarUrl}
+ * @access Private - only for Admins
  */
 ```
 
@@ -159,17 +180,39 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 /**
  * @route PATCH /users
  * @description Update an existing user
- * @body {id, username, roles, active, password}
- * @access Private - only for Admins and Managers
+ * @body {id, username, role, active, password, avatarUrl}
+ * @access Private - only for Admins
  */
 ```
 
 ```js
 /**
  * @route DELETE /users
- * @description Delete an existing user
- * @body {id}
- * @access Private - only for Admins and Managers
+ * @description Soft delete an existing user
+ * @params {id}
+ * @access Private - only for Admins
+ */
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### **Account APIs**
+
+```js
+/**
+ * @route GET /account/:id
+ * @description Get the currently logged-in user's account by their id
+ * @params {id}
+ * @access Private - for all users
+ */
+```
+
+```js
+/**
+ * @route PATCH /account/:id
+ * @description Update the currently logged-in user's account
+ * @body {id, username, password, avatarUrl}
+ * @access Private - for all users
  */
 ```
 
@@ -179,8 +222,26 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 ```js
 /**
- * @route GET /notes
+ * @route GET /notes/all
  * @description Get all notes
+ * @access Private - for all users
+ */
+```
+
+```js
+/**
+ * @route GET /notes/
+ * @description Get notes with search query, filter, and paginations
+ * @query {page, limit, ticket, title, status}
+ * @access Private - for all users
+ */
+```
+
+```js
+/**
+ * @route GET /notes/:id
+ * @description Get a single note by its id
+ * @params {id}
  * @access Private - for all users
  */
 ```
@@ -189,25 +250,25 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 /**
  * @route POST /notes
  * @description Create a new note
- * @body {user, title, text}
+ * @body {user, title, text, status}
  * @access Private - for all users
  */
 ```
 
 ```js
 /**
- * @route PATCH /notes
+ * @route PATCH /notes/:id
  * @description Update an existing note
- * @body {id, user, title, text, completed}
+ * @body {id, user, title, text, status}
  * @access Private - for all users
  */
 ```
 
 ```js
 /**
- * @route DELETE /notes
- * @description Delete an existing note
- * @body {id}
+ * @route DELETE /notes/:id
+ * @description Soft delete an existing note
+ * @params {id}
  * @access Private - only for Admins and Managers
  */
 ```
@@ -277,8 +338,8 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/hoanglechau/meganote-fe-v2.git
-   cd meganote-fe-v2
+   git clone https://github.com/hoanglechau/meganote-fe-v3.git
+   cd meganote-fe-v3
    ```
 2. Install NPM packages
    ```sh
@@ -307,9 +368,9 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 ## **Links**
 
-- Frontend Repository: [https://github.com/hoanglechau/meganote-fe-v2](https://github.com/hoanglechau/meganote-fe-v2)
+- Frontend Repository: [https://github.com/hoanglechau/meganote-fe-v3](https://github.com/hoanglechau/meganote-fe-v3)
 - Backend Repository: [https://github.com/hoanglechau/meganote-be](https://github.com/hoanglechau/meganote-be)
-- Deployed Frontend: [https://meganote-fe-v2.vercel.app/](https://meganote-fe-v2.vercel.app/)
+- Deployed Frontend: [https://meganote-fe-v3.vercel.app/](https://meganote-fe-v3.vercel.app/)
 - Deployed Backend: [https://meganote-be-production.up.railway.app/](https://meganote-be-production.up.railway.app/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -318,7 +379,7 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [product-screenshot]: public/images/Meganote.png
-[erd]: public/images/Meganote%20ERD%20light.png
+[erd]: public/images/Meganote%20ERD.png
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [Redux.js]: https://img.shields.io/badge/Redux-593D88?style=for-the-badge&logo=redux&logoColor=white
