@@ -3,9 +3,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
 
-// @desc Create new user
-// @route POST /users
-// @access Private
+// @desc Register new user (for demo purposes only)
+// @route POST /auth/register
+// @body username, password, role, avatarUrl
+// @access Public
 const register = async (req, res) => {
   const { username, password, role, avatarUrl } = req.body;
   console.log("req body: ", req.body);
@@ -53,6 +54,122 @@ const register = async (req, res) => {
   }
 };
 
+// @desc Login
+// @route POST /auth
+// @body username, password
+// @access Public
+const login = async (req, res) => {
+  const { username, password } = req.body;
+
+  // Check for required data
+  if (!username || !password) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Missing username or password!" });
+  }
+
+  // Check if user exists or is active
+  const foundUser = await User.findOne({ username }).exec();
+
+  if (!foundUser || !foundUser.active) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Username not found!" });
+  }
+
+  // Compare the password that we receive and the password stored in the database
+  const match = await bcrypt.compare(password, foundUser.password);
+
+  if (!match)
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Incorrect password!" });
+
+  // Create access token containing username and role
+  const accessToken = jwt.sign(
+    {
+      // Insert this information into the access token
+      UserInfo: {
+        username: foundUser.username,
+        role: foundUser.role,
+        avatarUrl: foundUser.avatarUrl,
+        _id: foundUser._id,
+      },
+    },
+    // Pass in the environment variable that contains the secret token
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  // Send accessToken containing username and role
+  res.json({
+    user: foundUser,
+    accessToken,
+    message: "Logged in successfully!",
+  });
+};
+
+module.exports = {
+  register,
+  login,
+};
+
+/*
+// @desc Refresh
+// @route GET /auth/refresh
+// @access Public - because access token has expired. The only way to get a new token is to send a request to this endpoint
+const refresh = (req, res) => {
+  // Check if the cookies exist
+  const cookies = req.cookies;
+
+  if (!cookies?.jwt)
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Unauthorized!" });
+
+  // Set the refreshToken variable to the cookies if the cookies exist
+  const refreshToken = cookies.jwt;
+
+  // Use jwt to verify the token
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+    // Catch any async errors that we didn't expect
+    async (err, decoded) => {
+      if (err)
+        return res
+          .status(StatusCodes.FORBIDDEN)
+          .json({ message: "Forbidden!" });
+
+      // Check if the user exists
+      const foundUser = await User.findOne({
+        username: decoded.username,
+      }).exec();
+
+      if (!foundUser)
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .json({ message: "Unauthorized!" });
+
+      // Create a new access token
+      const accessToken = jwt.sign(
+        {
+          UserInfo: {
+            username: foundUser.username,
+            role: foundUser.role,
+          },
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      res.json({ user: foundUser, accessToken, message: "Refreshed!" });
+    }
+  );
+};
+*/
+
+/*
 // @desc Login
 // @route POST /auth
 // @access Public
@@ -122,60 +239,9 @@ const login = async (req, res) => {
     message: "Logged in successfully!",
   });
 };
+*/
 
-// @desc Refresh
-// @route GET /auth/refresh
-// @access Public - because access token has expired. The only way to get a new token is to send a request to this endpoint
-const refresh = (req, res) => {
-  // Check if the cookies exist
-  const cookies = req.cookies;
-
-  if (!cookies?.jwt)
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Unauthorized!" });
-
-  // Set the refreshToken variable to the cookies if the cookies exist
-  const refreshToken = cookies.jwt;
-
-  // Use jwt to verify the token
-  jwt.verify(
-    refreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
-    // Catch any async errors that we didn't expect
-    async (err, decoded) => {
-      if (err)
-        return res
-          .status(StatusCodes.FORBIDDEN)
-          .json({ message: "Forbidden!" });
-
-      // Check if the user exists
-      const foundUser = await User.findOne({
-        username: decoded.username,
-      }).exec();
-
-      if (!foundUser)
-        return res
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: "Unauthorized!" });
-
-      // Create a new access token
-      const accessToken = jwt.sign(
-        {
-          UserInfo: {
-            username: foundUser.username,
-            role: foundUser.role,
-          },
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "7d" }
-      );
-
-      res.json({ user: foundUser, accessToken, message: "Refreshed!" });
-    }
-  );
-};
-
+/*
 // @desc Logout
 // @route POST /auth/logout
 // @access Public - just to clear cookie if exists
@@ -187,10 +253,4 @@ const logout = (req, res) => {
   res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
   res.status(StatusCodes.OK).json({ message: "Cookies cleared!" });
 };
-
-module.exports = {
-  register,
-  login,
-  refresh,
-  logout,
-};
+*/
