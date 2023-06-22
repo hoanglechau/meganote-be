@@ -22,7 +22,6 @@ const getSingleAccount = async (req, res) => {
 // @access Private
 const updateAccount = async (req, res) => {
   const { id, username, password, avatarUrl } = req.body;
-  console.log("req body", req.body);
 
   // Check for required data
   if (!id || !username) {
@@ -67,7 +66,6 @@ const updateAccount = async (req, res) => {
   // Save the updated user in the database
   const updatedUser = await user.save();
 
-  console.log("updated user", updatedUser);
   res.status(StatusCodes.OK).json({
     updatedUser,
     message: `Username ${updatedUser.username} updated successfully!`,
