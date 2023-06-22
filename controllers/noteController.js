@@ -31,21 +31,40 @@ const getAllNotes = async (req, res) => {
 // @access Private
 const getNotes = async (req, res, next) => {
   let { page, limit, ...filter } = { ...req.query };
-
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
 
+  // Not showing notes that have been soft deleted
   const filterConditions = [{ isDeleted: false }];
+  // If there's a ticket number in the query, search for the ticket number
   if (filter.ticket) {
     filterConditions.push({
       ticket: filter.ticket,
     });
   }
-  if (filter.title) {
-    filterConditions.push({
-      title: { $regex: filter.title, $options: "i" },
-    });
+  // Else, first search for the notes by the usernames of assignees
+  if (filter.term) {
+    const foundUsers = await User.find({
+      username: { $regex: filter.term, $options: "i" },
+    })
+      .lean()
+      .exec();
+
+    const foundUsersIds = foundUsers.map(user => user._id);
+
+    // If there are users found, search for the notes by the users' ids
+    // Else, search for the notes by the title
+    if (foundUsers?.length) {
+      filterConditions.push({
+        user: { $in: foundUsersIds },
+      });
+    } else {
+      filterConditions.push({
+        title: { $regex: filter.term, $options: "i" },
+      });
+    }
   }
+  // If there's a status in the query, search for the note status
   if (filter.status) {
     filterConditions.push({
       status: { $ne: filter.status },
@@ -55,6 +74,7 @@ const getNotes = async (req, res, next) => {
     ? { $and: filterConditions }
     : {};
 
+  // For table pagination
   const count = await Note.countDocuments(filterCriteria);
   const totalPage = Math.ceil(count / limit);
   const offset = limit * (page - 1);
@@ -70,7 +90,7 @@ const getNotes = async (req, res, next) => {
       .json({ message: "No notes found!" });
   }
 
-  // Add username to each note before sending the response
+  // Add the user's username and role to each note before sending the response
   const notesWithUser = await Promise.all(
     notes.map(async note => {
       const user = await User.findById(note.user);
@@ -167,7 +187,6 @@ const getSingleNote = async (req, res) => {
 // @access Private
 const createNote = async (req, res) => {
   const { user, title, text, status } = req.body;
-  console.log("req body", req.body);
 
   // Check for required data
   if (!user || !title || !text || !status) {
