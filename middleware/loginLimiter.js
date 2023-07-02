@@ -1,6 +1,14 @@
 const rateLimit = require("express-rate-limit");
 const { logEvents } = require("./logger");
 
+/**
+ * @description This file contains the login limiter middleware
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
+/**
+ * @description Login limiter middleware to limit the number of login attempts
+ */
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 5, // Limit each IP to 5 login requests per `window` per minute
