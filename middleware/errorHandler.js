@@ -1,5 +1,17 @@
 const { logEvents } = require("./logger");
 
+/**
+ * @description This file contains the error handler middleware
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
+/**
+ * @description Error handler middleware
+ * @param {*} err
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 const errorHandler = (err, req, res, next) => {
   logEvents(
     `${err.name}: ${err.message}\t${req.method}\t${req.url}\t${req.headers.origin}`,
