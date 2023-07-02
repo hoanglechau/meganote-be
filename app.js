@@ -13,6 +13,11 @@ const connectDB = require("./config/dbConnect");
 const mongoose = require("mongoose");
 const PORT = process.env.PORT || 5000;
 
+/**
+ * @description This file is the entry point of the application
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
 // Connect to MongoDB database
 connectDB();
 
