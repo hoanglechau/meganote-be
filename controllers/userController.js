@@ -71,6 +71,7 @@ const getUsers = async (req, res) => {
   const totalPage = Math.ceil(count / limit);
   const offset = limit * (page - 1);
 
+  console.log("filterCriteria", filterCriteria);
   let users = await User.find(filterCriteria)
     .sort({ createdAt: -1 })
     .skip(offset)
