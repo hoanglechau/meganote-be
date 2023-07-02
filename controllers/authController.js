@@ -16,7 +16,6 @@ const sendMail = require("../utils/sendMail");
  * @param {*} res
  * @route POST /auth/register
  * @access Public
- * @returns
  */
 const register = async (req, res) => {
   const { username, fullname, email, password, role } = req.body;
@@ -168,7 +167,10 @@ const forgotPassword = async (req, res) => {
 
   // Send the password reset email
   try {
-    const baseURL = "http://localhost:3000";
+    const baseURL =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:3000"
+        : process.env.FRONTEND_URL;
     const resetURL = `${baseURL}/resetpassword/${passwordResetToken}`;
 
     const message = `Hi ${user.username}! Please click the following link to reset your Meganote password (The link will expire in 1 hour!): ${resetURL}`;
