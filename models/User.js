@@ -1,8 +1,20 @@
 const mongoose = require("mongoose");
 
+/**
+ * @description This file is used to create the User model
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
 const userSchema = new mongoose.Schema(
   {
     username: {
+      type: String,
+      required: true,
+    },
+    fullname: {
+      type: String,
+      required: true,
+    },
+    email: {
       type: String,
       required: true,
     },
@@ -27,6 +39,19 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
       select: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+    passwordResetToken: {
+      type: String,
+      default: null,
+    },
+    passwordResetAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
