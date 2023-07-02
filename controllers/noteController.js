@@ -87,6 +87,8 @@ const getNotes = async (req, res) => {
     ? { $and: filterConditions }
     : {};
 
+  console.log("filterCriteria", filterCriteria);
+
   // For table pagination
   const count = await Note.countDocuments(filterCriteria);
   const totalPage = Math.ceil(count / limit);
@@ -245,7 +247,8 @@ const createNote = async (req, res) => {
  * @description Update an existing note
  * @param {id, user, title, text, status} req
  * @param {*} res
- * @returns
+ * @route PATCH /notes/:id
+ * @access Private
  */
 const updateNote = async (req, res) => {
   const { id, user, title, text, status } = req.body;
