@@ -3,13 +3,16 @@ const router = express.Router();
 const {
   getAllUsers,
   getUsers,
-  getCurrentUser,
   getSingleUser,
   createUser,
   updateUser,
   deleteUser,
 } = require("../controllers/userController");
 const verifyJWT = require("../middleware/verifyJWT");
+
+/**
+ * @description This file contains the routes for the user endpoints
+ */
 
 // Use the verifyJWT middleware for all routes in this file
 router.use(verifyJWT);
