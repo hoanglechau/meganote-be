@@ -1,3 +1,7 @@
+/**
+ * @description This file contains the options for the CORS 3rd party middleware
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
 const allowedOrigins = require("./allowedOrigins");
 
 // These options follow the rules of the CORS 3rd party middleware
