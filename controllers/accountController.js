@@ -2,10 +2,18 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const { StatusCodes } = require("http-status-codes");
 
-// @desc Get the currently logged-in user's account by their id
-// @route GET /account/:id
-// @params id
-// @access Private
+/**
+ * @description This file contains the controllers for the account endpoints
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
+/**
+ * @description Get the currently logged-in user's account by their id
+ * @param {id} req
+ * @param {*} res
+ * @route GET /account/:id
+ * @access Private
+ */
 const getSingleAccount = async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
@@ -16,15 +24,18 @@ const getSingleAccount = async (req, res) => {
   res.status(StatusCodes.OK).json({ user });
 };
 
-// @desc Update the currently logged-in user's account
-// @route PATCH /account/:id
-// @body id, username, password, avatarUrl
-// @access Private
+/**
+ * @description Update the currently logged-in user's account
+ * @param {id, username, email, password} req
+ * @param {*} res
+ * @route PATCH /account/:id
+ * @access Private
+ */
 const updateAccount = async (req, res) => {
-  const { id, username, password, avatarUrl } = req.body;
+  const { id, username, email, password } = req.body;
 
   // Check for required data
-  if (!id || !username) {
+  if (!id || !username || !email) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Missing required data! Only password is optional!" });
@@ -53,10 +64,18 @@ const updateAccount = async (req, res) => {
       .json({ message: "This username already exists!" });
   }
 
+  const existingEmail = await User.findOne({ email }).lean().exec();
+
+  if (existingEmail && existingEmail?._id.toString() !== id) {
+    return res
+      .status(StatusCodes.CONFLICT)
+      .json({ message: "This email has already been used!" });
+  }
+
   // Update the user with the new data
   // Can only do this if these properties exist in the Mongoose User model
   user.username = username;
-  user.avatarUrl = avatarUrl;
+  user.email = email;
 
   if (password) {
     // Hash the new password with 10 salt rounds
@@ -68,11 +87,52 @@ const updateAccount = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     updatedUser,
-    message: `Username ${updatedUser.username} updated successfully!`,
+    message: `User ${updatedUser.username} updated successfully!`,
+  });
+};
+
+/**
+ * @description Update the currently logged-in user's profile
+ * @param {id, fullname, avatarUrl} req
+ * @param {*} res
+ * @route PUT /account/:id
+ * @access Private
+ */
+const updateProfile = async (req, res) => {
+  const { id, fullname, avatarUrl } = req.body;
+
+  // Check for required data
+  if (!id || !fullname) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Missing required data!" });
+  }
+
+  const user = await User.findById(id).exec();
+
+  // Check if user exists
+  if (!user) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "User not found!" });
+  }
+
+  // Update the user with the new data
+  // Can only do this if these properties exist in the Mongoose User model
+  user.fullname = fullname;
+  user.avatarUrl = avatarUrl;
+
+  // Save the updated user in the database
+  const updatedUser = await user.save();
+
+  res.status(StatusCodes.OK).json({
+    updatedUser,
+    message: `User ${updatedUser.username} updated successfully!`,
   });
 };
 
 module.exports = {
   getSingleAccount,
   updateAccount,
+  updateProfile,
 };
