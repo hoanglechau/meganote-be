@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const AutoIncrement = require("mongoose-sequence")(mongoose);
 
+/**
+ * @description This file is used to create the Note model
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
 const noteSchema = new mongoose.Schema(
   {
     user: {
@@ -23,6 +27,11 @@ const noteSchema = new mongoose.Schema(
     isDeleted: {
       type: Boolean,
       default: false,
+      select: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
       select: false,
     },
   },
