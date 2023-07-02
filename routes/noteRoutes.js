@@ -10,6 +10,11 @@ const {
 } = require("../controllers/noteController");
 const verifyJWT = require("../middleware/verifyJWT");
 
+/**
+ * @description This file contains the routes for the note endpoints
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
 // Use the verifyJWT middleware for all routes in this file
 router.use(verifyJWT);
 
