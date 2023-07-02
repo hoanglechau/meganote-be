@@ -1,18 +1,29 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
+const sendMail = require("../utils/sendMail");
 
-// @desc Register new user (for demo purposes only)
-// @route POST /auth/register
-// @body username, password, role, avatarUrl
-// @access Public
+/**
+ * @description This file contains the controllers for the auth endpoints
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
+/**
+ * @description Register new user (for demo purposes only)
+ * @param {username, fullname, email, password, role} req
+ * @param {*} res
+ * @route POST /auth/register
+ * @access Public
+ * @returns
+ */
 const register = async (req, res) => {
-  const { username, password, role, avatarUrl } = req.body;
+  const { username, fullname, email, password, role } = req.body;
 
   // Check for required data
   // 'Roles' is not required since it already has a default as 'Employee'
-  if (!username || !password) {
+  if (!username || !fullname || !email || !password) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Missing required data!" });
@@ -32,13 +43,21 @@ const register = async (req, res) => {
       .json({ message: "This username already exists!" });
   }
 
+  const existingEmail = await User.findOne({ email }).lean().exec();
+
+  if (existingEmail) {
+    return res
+      .status(StatusCodes.CONFLICT)
+      .json({ message: "This email has already been used!" });
+  }
+
   // Hash the password, put it through 10 salt rounds to ensure that the password is safe. Even when looking at it in the database, we wouldn't know what the password is
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // If role doesn't exist in the request body, don't include it in the user object
   const userObject = !role
-    ? { username, password: hashedPassword, avatarUrl }
-    : { username, password: hashedPassword, role, avatarUrl };
+    ? { username, fullname, email, password: hashedPassword }
+    : { username, fullname, email, password: hashedPassword, role };
 
   // Create and store the new user in the database
   const user = await User.create(userObject);
@@ -53,10 +72,13 @@ const register = async (req, res) => {
   }
 };
 
-// @desc Login
-// @route POST /auth
-// @body username, password
-// @access Public
+/**
+ * @description Login
+ * @param {username, password} req
+ * @param {*} res
+ * @route POST /auth
+ * @access Public
+ */
 const login = async (req, res) => {
   const { username, password } = req.body;
 
@@ -106,150 +128,129 @@ const login = async (req, res) => {
     accessToken,
     message: "Logged in successfully!",
   });
+};
+
+/**
+ * @description Send reset password email
+ * @param {email} req
+ * @param {*} res
+ * @route POST /auth/forgotpassword
+ * @access Public
+ * @returns
+ */
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  // Check if the user with that email exists
+  const user = await User.findOne({ email }).exec();
+  if (!user) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        "There is no user with that email address. Please check your email again!",
+    });
+  }
+
+  // Generate a random reset token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Set the password reset token and its expiration date
+  const date = new Date();
+
+  await User.findOneAndUpdate(
+    { _id: user._id },
+    { passwordResetToken, passwordResetAt: date },
+    { email: true }
+  ).exec();
+
+  // Send the password reset email
+  try {
+    const baseURL = "http://localhost:3000";
+    const resetURL = `${baseURL}/resetpassword/${passwordResetToken}`;
+
+    const message = `Hi ${user.username}! Please click the following link to reset your Meganote password (The link will expire in 1 hour!): ${resetURL}`;
+
+    sendMail(user.email, "Meganote - Password Reset", message);
+
+    return res.status(StatusCodes.OK).json({
+      message:
+        "Password reset email sent! Please use the reset link within 1 hour!",
+    });
+  } catch (error) {
+    await User.findOneAndUpdate(
+      { _id: user._id },
+      { passwordResetToken: null, passwordResetAt: null }
+    ).exec();
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The server encounters an error when sending password reset email!",
+    });
+  }
+};
+
+/**
+ * @description Update the user's password when they need to reset it
+ * @param {passwordResetToken, password} req
+ * @param {*} res
+ * @route PATCH /auth/resetpassword/:passwordResetToken
+ * @access Public
+ */
+const resetPassword = async (req, res) => {
+  const { passwordResetToken } = req.params;
+  const { password } = req.body;
+
+  if (!passwordResetToken || !password) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Missing required data!" });
+  }
+
+  let date = new Date();
+
+  const user = await User.findOne({
+    passwordResetToken,
+    passwordResetAt: { $lt: date },
+  }).exec();
+
+  let resetDate = new Date(user.passwordResetAt);
+  let isExpired = false;
+
+  if (user) {
+    resetDate.setMinutes(resetDate.getMinutes() + 60);
+    if (date > resetDate) {
+      isExpired = true;
+    }
+  }
+
+  if (!user || isExpired) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid token or token has expired!" });
+  }
+
+  // Hash the new password with 10 salt rounds
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  await User.findOneAndUpdate(
+    { _id: user._id },
+    {
+      password: hashedPassword,
+      passwordResetToken: null,
+      passwordResetAt: null,
+    },
+    { email: true }
+  ).exec();
+
+  res.status(StatusCodes.OK).json({ message: "Password reset successfully!" });
 };
 
 module.exports = {
   register,
   login,
+  forgotPassword,
+  resetPassword,
 };
-
-/*
-// @desc Refresh
-// @route GET /auth/refresh
-// @access Public - because access token has expired. The only way to get a new token is to send a request to this endpoint
-const refresh = (req, res) => {
-  // Check if the cookies exist
-  const cookies = req.cookies;
-
-  if (!cookies?.jwt)
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Unauthorized!" });
-
-  // Set the refreshToken variable to the cookies if the cookies exist
-  const refreshToken = cookies.jwt;
-
-  // Use jwt to verify the token
-  jwt.verify(
-    refreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
-    // Catch any async errors that we didn't expect
-    async (err, decoded) => {
-      if (err)
-        return res
-          .status(StatusCodes.FORBIDDEN)
-          .json({ message: "Forbidden!" });
-
-      // Check if the user exists
-      const foundUser = await User.findOne({
-        username: decoded.username,
-      }).exec();
-
-      if (!foundUser)
-        return res
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: "Unauthorized!" });
-
-      // Create a new access token
-      const accessToken = jwt.sign(
-        {
-          UserInfo: {
-            username: foundUser.username,
-            role: foundUser.role,
-          },
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "7d" }
-      );
-
-      res.json({ user: foundUser, accessToken, message: "Refreshed!" });
-    }
-  );
-};
-*/
-
-/*
-// @desc Login
-// @route POST /auth
-// @access Public
-const login = async (req, res) => {
-  const { username, password } = req.body;
-
-  // Check for required data
-  if (!username || !password) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Missing username or password!" });
-  }
-
-  // Check if user exists or is active
-  const foundUser = await User.findOne({ username }).exec();
-
-  if (!foundUser || !foundUser.active) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Username not found!" });
-  }
-
-  // Compare the password that we receive and the password stored in the database
-  const match = await bcrypt.compare(password, foundUser.password);
-
-  if (!match)
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Incorrect password!" });
-
-  // Create access token containing username and role
-  const accessToken = jwt.sign(
-    {
-      // Insert this information into the access token
-      UserInfo: {
-        username: foundUser.username,
-        role: foundUser.role,
-        avatarUrl: foundUser.avatarUrl,
-        _id: foundUser._id,
-      },
-    },
-    // Pass in the environment variable that contains the secret token
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  // Create refresh token containing username
-  const refreshToken = jwt.sign(
-    { username: foundUser.username },
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  // Create secure cookie with refresh token
-  res.cookie("jwt", refreshToken, {
-    httpOnly: true, //accessible only by web server
-    secure: true, //https
-    // Using cross-site cookie since we may have our frontend and backend on different domains
-    // sameSite: "None", //cross-site cookie
-    maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
-  });
-
-  // Send accessToken containing username and role
-  res.json({
-    user: foundUser,
-    accessToken,
-    message: "Logged in successfully!",
-  });
-};
-*/
-
-/*
-// @desc Logout
-// @route POST /auth/logout
-// @access Public - just to clear cookie if exists
-const logout = (req, res) => {
-  // Check if the cookies exist
-  const cookies = req.cookies;
-  if (!cookies?.jwt) return res.sendStatus(StatusCodes.NO_CONTENT); //No content -> The request was successful but there's no content
-  // Remove the cookies if the user decides to manually log out
-  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-  res.status(StatusCodes.OK).json({ message: "Cookies cleared!" });
-};
-*/
