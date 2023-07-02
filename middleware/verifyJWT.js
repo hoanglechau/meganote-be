@@ -1,6 +1,17 @@
 const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
 
+/**
+ * @description This file contains the middleware for verifying the JWT token
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
+/**
+ * @description Verify the JWT token
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 const verifyJWT = (req, res, next) => {
   // Look for both the lowercase and uppercase Authorization header
   const authHeader = req.headers.authorization || req.headers.Authorization;
