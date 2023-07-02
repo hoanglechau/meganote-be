@@ -1,10 +1,20 @@
 const Note = require("../models/Note");
 const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
+const sendMail = require("../utils/sendMail");
 
-// @desc Get all notes
-// @route GET /notes/all
-// @access Private
+/**
+ * @description This file contains the routes for the note endpoints
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
+/**
+ * @description Get all notes
+ * @param {*} req
+ * @param {*} res
+ * @route GET /notes/all
+ * @access Private
+ */
 const getAllNotes = async (req, res) => {
   // Get all notes from MongoDB
   const notes = await Note.find().lean();
@@ -25,11 +35,14 @@ const getAllNotes = async (req, res) => {
   res.status(StatusCodes.OK).json(notesWithUser);
 };
 
-// @desc Get notes with search query, filter, and paginations
-// @route GET /notes
-// @query page, limit, ticket, title, status
-// @access Private
-const getNotes = async (req, res, next) => {
+/**
+ * @description Get notes with search query, filter, and paginations
+ * @param {page, limit, ...filter} req
+ * @param {*} res
+ * @route GET /notes
+ * @access Private
+ */
+const getNotes = async (req, res) => {
   let { page, limit, ...filter } = { ...req.query };
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
@@ -42,10 +55,10 @@ const getNotes = async (req, res, next) => {
       ticket: filter.ticket,
     });
   }
-  // Else, first search for the notes by the usernames of assignees
+  // Else, first search for the notes by the fullnames of assignees
   if (filter.term) {
     const foundUsers = await User.find({
-      username: { $regex: filter.term, $options: "i" },
+      fullname: { $regex: filter.term, $options: "i" },
     })
       .lean()
       .exec();
@@ -131,10 +144,13 @@ const getNotes = async (req, res, next) => {
     .json({ notes: notesWithUser, totalPage, count });
 };
 
-// @desc Get a single note by its id
-// @route GET /notes/:id
-// @params id
-// @access Private
+/**
+ * @description Get a single note by its id
+ * @param {id} req
+ * @param {*} res
+ * @route GET /notes/:id
+ * @access Private
+ */
 const getSingleNote = async (req, res) => {
   const note = await Note.findById(req.params.id);
   if (!note) {
@@ -181,10 +197,13 @@ const getSingleNote = async (req, res) => {
   res.status(StatusCodes.OK).json({ note: noteResult });
 };
 
-// @desc Create a new note
-// @route POST /notes
-// @body user, title, text, status
-// @access Private
+/**
+ * @description Create a new note
+ * @param {user, title, text, status} req
+ * @param {*} res
+ * @route POST /notes
+ * @access Private
+ */
 const createNote = async (req, res) => {
   const { user, title, text, status } = req.body;
 
@@ -222,10 +241,12 @@ const createNote = async (req, res) => {
   }
 };
 
-// @desc Update an existing note
-// @route PATCH /notes/:id
-// @body id, user, title, text, status
-// @access Private
+/**
+ * @description Update an existing note
+ * @param {id, user, title, text, status} req
+ * @param {*} res
+ * @returns
+ */
 const updateNote = async (req, res) => {
   const { id, user, title, text, status } = req.body;
 
@@ -266,15 +287,26 @@ const updateNote = async (req, res) => {
 
   const updatedNote = await note.save();
 
-  res
-    .status(StatusCodes.OK)
-    .json(`'Note #${updatedNote.ticket}' updated successfully!`);
+  const noteUser = await User.findById(updatedNote.user).exec();
+
+  // Send a notification email to the user
+  const message = `Hi ${noteUser.username}! Your note #${updatedNote.ticket} on Meganote has been updated!`;
+  sendMail(noteUser.email, "Meganote - Account Updated", message);
+
+  return res.status(StatusCodes.OK).json({
+    updatedNote,
+    message: `Note #${updatedNote.ticket} updated successfully!`,
+  });
 };
 
-// @desc Soft delete an existing note
-// @route DELETE /notes/:id
-// @params id
-// @access Private
+/**
+ * @description Soft delete an existing note
+ * @param {id} req
+ * @param {*} res
+ * @route DELETE /notes/:id
+ * @access Private
+ * @returns
+ */
 const deleteNote = async (req, res) => {
   const { id } = req.params;
 
@@ -285,10 +317,12 @@ const deleteNote = async (req, res) => {
       .json({ message: "Missing required data" });
   }
 
+  const date = new Date();
+
   // Check if the user exists
   const note = await Note.findOneAndUpdate(
     { _id: id },
-    { isDeleted: true },
+    { isDeleted: true, deletedAt: date },
     { new: true }
   ).exec();
 
