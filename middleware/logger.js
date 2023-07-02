@@ -4,7 +4,16 @@ const fs = require("fs");
 const fsPromises = require("fs").promises;
 const path = require("path");
 
-// Helper function
+/**
+ * @description This file contains the logger middleware
+ * @author [Hoang Le Chau](https://github.com/hoanglechau)
+ */
+
+/**
+ * @description Log events to a log file
+ * @param {*} message
+ * @param {*} logFileName
+ */
 const logEvents = async (message, logFileName) => {
   const dateTime = format(new Date(), "yyyyMMdd\tHH:mm:ss");
   // uuid creates a unique id for each log item
@@ -26,7 +35,12 @@ const logEvents = async (message, logFileName) => {
   }
 };
 
-// The logger middleware logs the request method, url, and origin
+/**
+ * @description Log the method, url, and origin of every request that comes into the server
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 const logger = (req, res, next) => {
   // Log every request that comes into the server
   // Can also include if clauses to log only certain requests
