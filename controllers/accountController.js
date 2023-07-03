@@ -87,7 +87,7 @@ const updateAccount = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     updatedUser,
-    message: `User ${updatedUser.username} updated successfully!`,
+    message: `Your account settings have been updated!`,
   });
 };
 
@@ -127,7 +127,7 @@ const updateProfile = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     updatedUser,
-    message: `User ${updatedUser.username} updated successfully!`,
+    message: `Your profile has been updated!`,
   });
 };
 
