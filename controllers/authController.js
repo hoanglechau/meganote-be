@@ -125,7 +125,7 @@ const login = async (req, res) => {
   res.json({
     user: foundUser,
     accessToken,
-    message: "Logged in successfully!",
+    message: `Welcome, ${foundUser.fullname}!`,
   });
 };
 
