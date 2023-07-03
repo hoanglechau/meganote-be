@@ -24,8 +24,8 @@ const userSchema = new mongoose.Schema(
     },
     avatarUrl: {
       type: String,
-      require: false,
-      default: "https://i.redd.it/6qk9jq22ho541.jpg",
+      required: false,
+      default: "",
     },
     role: {
       type: String,
