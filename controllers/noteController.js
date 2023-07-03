@@ -87,8 +87,6 @@ const getNotes = async (req, res) => {
     ? { $and: filterConditions }
     : {};
 
-  console.log("filterCriteria", filterCriteria);
-
   // For table pagination
   const count = await Note.countDocuments(filterCriteria);
   const totalPage = Math.ceil(count / limit);
@@ -235,7 +233,7 @@ const createNote = async (req, res) => {
   if (note) {
     return res
       .status(StatusCodes.CREATED)
-      .json({ message: "New note created successfully!" });
+      .json({ message: `New note #${note.ticket} created successfully!` });
   } else {
     return res
       .status(StatusCodes.BAD_REQUEST)
@@ -336,7 +334,7 @@ const deleteNote = async (req, res) => {
   }
 
   res.status(StatusCodes.OK).json({
-    message: `Note #${note.ticket} deleted successfully!`,
+    message: `Note #${note.ticket} has been deleted!`,
   });
 };
 
