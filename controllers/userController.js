@@ -71,7 +71,6 @@ const getUsers = async (req, res) => {
   const totalPage = Math.ceil(count / limit);
   const offset = limit * (page - 1);
 
-  console.log("filterCriteria", filterCriteria);
   let users = await User.find(filterCriteria)
     .sort({ createdAt: -1 })
     .skip(offset)
@@ -238,7 +237,7 @@ const updateUser = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     updatedUser,
-    message: `User "${updatedUser.username}" updated successfully!`,
+    message: `User "${updatedUser.fullname}" updated successfully!`,
   });
 };
 
@@ -287,7 +286,7 @@ const deleteUser = async (req, res) => {
 
   // Return a success message after deleting the user
   res.status(StatusCodes.OK).json({
-    message: `User "${user.username}" deleted successfully!`,
+    message: `User "${user.fullname}" has been deleted!`,
   });
 };
 
