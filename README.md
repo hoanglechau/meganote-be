@@ -13,6 +13,7 @@
       <ul>
         <li><a href="#project-description">Project Description</a></li>
         <li><a href="#user-stories">User Stories</a></li>
+        <li><a href="#notable-features">Notable Features</a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
@@ -67,7 +68,7 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 - As a user, I can sign in with my username and password
 - As a user, I can choose to stay signed in after refreshing the page
-- As a user, I can edit my own username, avatar URL, and password
+- As a user, I can edit my own username, full name, avatar, email, and password
 - As a user, I can sign out from the system
 
 #### _Admin_
@@ -94,6 +95,21 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 - As an employee, I can view a list of the notes assigned to me
 - As an employee, I can edit the information of the notes currently assigned to me
 - As an employee, I can create new notes and assign them to myself or other employees. I cannot assign notes to admins or managers
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### **Notable Features**
+
+- Persistent login sessions for users
+- Users can switch between dark and light modes
+- Users can upload their own avatars from their computers (stored on Firebase)
+- If users forgot their password, they can click "Forgot Password" and receive a password reset email with a reset token
+- Whenever a user's account information or notes get updated, the app will send them a notification email
+- Admins can search for users by their name or role
+- Admins can choose to hide inactive users
+- Users can search for notes by ticket number, title, or user's name
+- Users can choose to hide completed notes
+- Debounced search input
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -134,7 +150,7 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 /**
  * @route POST /auth/register
  * @description Register new user (for demo purposes only)
- * @body {username, password, role, avatarUrl}
+ * @body {username, fullname, email, password, role}
  * @access Public
  */
 ```
@@ -147,7 +163,7 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 /**
  * @route GET /users
  * @description Get users with search query, filter, and paginations
- * @query {page, limit, username, role, active}
+ * @query {page, limit, fullname, role, active}
  * @access Private - only for Admins
  */
 ```
@@ -173,23 +189,23 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 /**
  * @route POST /users
  * @description Create a new user
- * @body {username, password, role, avatarUrl}
+ * @body {username, fullname, email, password, role}
  * @access Private - only for Admins
  */
 ```
 
 ```js
 /**
- * @route PATCH /users
+ * @route PATCH /users/:id
  * @description Update an existing user
- * @body {id, username, role, active, password, avatarUrl}
+ * @body {id, username, fullname, email, role, active}
  * @access Private - only for Admins
  */
 ```
 
 ```js
 /**
- * @route DELETE /users
+ * @route DELETE /users/:id
  * @description Soft delete an existing user
  * @params {id}
  * @access Private - only for Admins
@@ -212,8 +228,17 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 ```js
 /**
  * @route PATCH /account/:id
- * @description Update the currently logged-in user's account
- * @body {id, username, password, avatarUrl}
+ * @description Update the currently logged-in user's account settings
+ * @body {id, username, email, password}
+ * @access Private - for all users
+ */
+```
+
+```js
+/**
+ * @route PUT /account/:id
+ * @description Update the currently logged-in user's profile
+ * @body {id, fullname, avatarUrl}
  * @access Private - for all users
  */
 ```
@@ -310,8 +335,8 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/hoanglechau/meganote-be.git
-   cd meganote-be
+   git clone https://github.com/hoanglechau/meganote-be-v2.git
+   cd meganote-be-v2
    ```
 2. Install NPM packages
    ```sh
@@ -319,18 +344,23 @@ Features for the future: Making a mobile version of the app for iOS and Android.
    ```
 3. Create an `.env` file with the following contents
    ```js
-   MONGO_URI = your_mongodb_uri;
-   PORT = your_preferred_port; // default: 5000
-   NODE_ENV = development;
-   ACCESS_TOKEN_SECRET = your_access_token_secret;
-   REFRESH_TOKEN_SECRET = your_refresh_token_secret;
+   MONGO_URI = your_mongodb_uri
+   PORT = your_preferred_port // default: 5000
+   NODE_ENV = development
+   ACCESS_TOKEN_SECRET = your_access_token_secret
+   REFRESH_TOKEN_SECRET = your_refresh_token_secret
+   EMAIL_SERVICE=your_email_service
+   EMAIL_USERNAME=your_email_username
+   EMAIL_PASSWORD=your_email_password
+   EMAIL_FROM=your_email_address
+   FRONTEND_URL=https://meganote-fe-v4.vercel.app
    ```
 4. Generate two different secret keys for `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` using the built-in `crypto` module of `node`
    ```sh
    node
    require('crypto').randomBytes(64).toString('hex')
    ```
-5. Replace the default values with your own values for `PORT` (optional), `MONGO_URI`, `ACCESS_TOKEN_SECRET`, and `REFRESH_TOKEN_SECRET` in the `.env` file
+5. Replace the default values with your own values for `PORT` (optional), `MONGO_URI`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `EMAIL_SERVICE`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_FROM` in the `.env` file
 6. Start the server
    ```sh
    npm start
@@ -340,8 +370,8 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/hoanglechau/meganote-fe-v3.git
-   cd meganote-fe-v3
+   git clone https://github.com/hoanglechau/meganote-fe-v4.git
+   cd meganote-fe-v4
    ```
 2. Install NPM packages
    ```sh
@@ -351,8 +381,9 @@ Features for the future: Making a mobile version of the app for iOS and Android.
    ```js
    VITE_NODE_ENV = development;
    VITE_API_URL = your_api_url; // default: http://localhost:5000
+   VITE_FIREBASE_API_KEY = your_firebase_api_key;
    ```
-4. Optional: Replace the value of `VITE_API_URL` with the URL of your deployed API
+4. Replace the value of `VITE_FIREBASE_API_KEY` with your own Firebase API Key. Optional: Replace the value of `VITE_API_URL` with the URL of your deployed API
 5. Build the app
    ```sh
    npm run build
@@ -370,10 +401,10 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 ## **Links**
 
-- Frontend Repository: [https://github.com/hoanglechau/meganote-fe-v3](https://github.com/hoanglechau/meganote-fe-v3)
-- Backend Repository: [https://github.com/hoanglechau/meganote-be](https://github.com/hoanglechau/meganote-be)
-- Deployed Frontend: [https://meganote-fe-v3.vercel.app/](https://meganote-fe-v3.vercel.app/)
-- Deployed Backend: [https://meganote-be-production.up.railway.app/](https://meganote-be-production.up.railway.app/)
+- Frontend Repository: [https://github.com/hoanglechau/meganote-fe-v4](https://github.com/hoanglechau/meganote-fe-v4)
+- Backend Repository: [https://github.com/hoanglechau/meganote-be-v2](https://github.com/hoanglechau/meganote-be-v2)
+- Deployed Frontend: [https://meganote-fe-v4.vercel.app/](https://meganote-fe-v3.vercel.app/)
+- Deployed Backend: [https://meganote-be-v2-production.up.railway.app/](https://meganote-be-v2-production.up.railway.app/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
