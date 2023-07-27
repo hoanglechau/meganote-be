@@ -401,10 +401,10 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 
 ## **Links**
 
-- Frontend Repository: [https://github.com/hoanglechau/meganote-fe-v4](https://github.com/hoanglechau/meganote-fe-v4)
-- Backend Repository: [https://github.com/hoanglechau/meganote-be-v2](https://github.com/hoanglechau/meganote-be-v2)
-- Deployed Frontend: [https://meganote-fe-v4.vercel.app/](https://meganote-fe-v3.vercel.app/)
-- Deployed Backend: [https://meganote-be-v2-production.up.railway.app/](https://meganote-be-v2-production.up.railway.app/)
+- Frontend Repository: [https://github.com/hoanglechau/meganote-frontend](https://github.com/hoanglechau/meganote-frontend)
+- Backend Repository: [https://github.com/hoanglechau/meganote-backend](https://github.com/hoanglechau/meganote-backend)
+- Deployed Frontend: [https://meganote.vercel.app/](https://meganote.vercel.app/)
+- Deployed Backend: [https://meganote.up.railway.app/](https://meganote.up.railway.app/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
