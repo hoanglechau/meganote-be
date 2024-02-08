@@ -8,6 +8,7 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
+    <li><a href="#links">Links</a></li>
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
@@ -36,9 +37,21 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#links">Links</a></li>
   </ol>
 </details>
+
+---
+
+<!-- LINKS -->
+
+## **Links**
+
+- Frontend Repository: [https://github.com/hoanglechau/meganote-frontend](https://github.com/hoanglechau/meganote-frontend)
+- Backend Repository: [https://github.com/hoanglechau/meganote-backend](https://github.com/hoanglechau/meganote-backend)
+- Deployed Frontend: [https://meganote.vercel.app/](https://meganote.vercel.app/)
+- Deployed Backend: [https://meganote.up.railway.app/](https://meganote.up.railway.app/)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
@@ -396,17 +409,6 @@ Features for the future: Making a mobile version of the app for iOS and Android.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
-
-<!-- LINKS -->
-
-## **Links**
-
-- Frontend Repository: [https://github.com/hoanglechau/meganote-frontend](https://github.com/hoanglechau/meganote-frontend)
-- Backend Repository: [https://github.com/hoanglechau/meganote-backend](https://github.com/hoanglechau/meganote-backend)
-- Deployed Frontend: [https://meganote.vercel.app/](https://meganote.vercel.app/)
-- Deployed Backend: [https://meganote.up.railway.app/](https://meganote.up.railway.app/)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
